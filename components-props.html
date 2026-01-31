@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Components & Props - Learn Next.js</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-elevated: #1a1a25;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent-green: #00d4aa;
+      --accent-green-glow: rgba(0, 212, 170, 0.3);
+      --accent-pink: #ff6b9d;
+      --accent-pink-glow: rgba(255, 107, 157, 0.3);
+      --accent-blue: #4d9fff;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+      --accent-yellow: #eab308;
+      --border-color: #2a2a3a;
+      --gradient-primary: linear-gradient(135deg, #00d4aa 0%, #4d9fff 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 16px 40px;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    nav .nav-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent-green);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 140px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-green-glow) 0%, transparent 70%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Section */
+    section {
+      padding: 100px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* What is a Component */
+    #what-is-component {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 100%);
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .concept-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
+
+    .concept-text h3 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    .concept-text p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .concept-visual {
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Component Building Blocks */
+    .building-blocks {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .block-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .block-item:hover {
+      border-color: var(--accent-green);
+      transform: translateX(8px);
+    }
+
+    .block-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .block-content h4 {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .block-content p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Interactive Component Demo */
+    .interactive-demo {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .demo-header {
+      padding: 20px 30px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .demo-header h3 {
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .demo-tab {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .demo-tab.active {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      color: #000;
+    }
+
+    .demo-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 800px) {
+      .demo-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .demo-code {
+      padding: 30px;
+      border-right: 1px solid var(--border-color);
+      background: var(--bg-dark);
+    }
+
+    .demo-preview {
+      padding: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+
+    .code-block {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      display: block;
+      padding: 2px 0;
+    }
+
+    .code-line.highlight {
+      background: rgba(0, 212, 170, 0.1);
+      margin: 0 -30px;
+      padding: 2px 30px;
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .code-keyword { color: var(--accent-pink); }
+    .code-function { color: var(--accent-blue); }
+    .code-string { color: var(--accent-green); }
+    .code-tag { color: #e06c75; }
+    .code-attr { color: var(--accent-orange); }
+    .code-comment { color: var(--text-muted); }
+    .code-variable { color: var(--accent-yellow); }
+    .code-bracket { color: var(--text-secondary); }
+
+    /* Preview Card Component */
+    .preview-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .preview-card-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .preview-card h4 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .preview-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .preview-card-btn {
+      padding: 10px 20px;
+      background: var(--accent-green);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Props Section */
+    #props {
+      background: var(--bg-dark);
+    }
+
+    /* Simple Explanation */
+    .simple-explanation {
+      max-width: 700px;
+      margin: 0 auto 50px;
+    }
+
+    .explanation-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      border: 1px solid var(--border-color);
+    }
+
+    .explanation-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .explanation-content h3 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .explanation-content p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .mental-model {
+      background: var(--bg-elevated);
+      padding: 16px 24px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .mental-model code {
+      color: var(--accent-green);
+    }
+
+    .mental-model span {
+      color: var(--text-muted);
+    }
+
+    .props-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .props-flow-item {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px 40px;
+      text-align: center;
+      border: 2px solid var(--border-color);
+      min-width: 180px;
+    }
+
+    .props-flow-item.parent {
+      border-color: var(--accent-green);
+    }
+
+    .props-flow-item.child {
+      border-color: var(--accent-blue);
+    }
+
+    .props-flow-item h4 {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .props-flow-item p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .flow-arrow {
+      font-size: 1.2rem;
+      color: var(--accent-pink);
+      font-family: 'JetBrains Mono', monospace;
+      animation: bounce-down 1s infinite;
+    }
+
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    /* Code Example Section */
+    .code-example-section {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .code-example-section h3 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .section-desc code {
+      background: var(--bg-elevated);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-pink);
+    }
+
+    .code-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .code-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .code-panel {
+      background: var(--bg-dark);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .code-panel.single {
+      max-width: 600px;
+    }
+
+    .code-panel-header {
+      padding: 12px 16px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .file-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .child-badge {
+      background: rgba(77, 159, 255, 0.2);
+      color: var(--accent-blue);
+    }
+
+    .parent-badge {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-green);
+    }
+
+    .file-name {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .code-block {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 0;
+    }
+
+    .result-indicator {
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .result-indicator code {
+      background: var(--bg-dark);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-green);
+    }
+
+    /* Highlight Section */
+    .highlight-section {
+      border: 2px solid var(--accent-green);
+      position: relative;
+    }
+
+    .best-practice-badge,
+    .important-badge {
+      position: absolute;
+      top: -14px;
+      left: 24px;
+      background: var(--accent-green);
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .important-badge {
+      background: var(--accent-orange);
+    }
+
+    /* Warning Section */
+    .warning-section {
+      border: 2px solid var(--accent-orange);
+      position: relative;
+    }
+
+    .warning-badge {
+      position: absolute;
+      top: -14px;
+      left: 24px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* Code Comparison */
+    .code-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .code-comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .comparison-badge.bad {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-pink);
+    }
+
+    .comparison-badge.good {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-green);
+    }
+
+    /* Children Visual Demo */
+    .children-visual-demo {
+      margin-top: 24px;
+    }
+
+    .wrapper-demo {
+      border: 2px dashed var(--accent-blue);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      background: var(--bg-elevated);
+    }
+
+    .wrapper-label {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--bg-card);
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .wrapper-label-end {
+      position: absolute;
+      bottom: -12px;
+      left: 20px;
+      background: var(--bg-card);
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .children-content {
+      text-align: center;
+    }
+
+    .children-content h4 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .children-content p {
+      color: var(--text-secondary);
+    }
+
+    /* Mistakes Section */
+    .mistakes-section {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mistakes-section h3 {
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+    }
+
+    .mistakes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .mistakes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mistake-card {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mistake-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mistake-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-pink);
+      flex-shrink: 0;
+    }
+
+    .mistake-header h4 {
+      font-size: 0.95rem;
+    }
+
+    .mistake-header code {
+      background: var(--bg-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .mistake-examples {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mistake-example {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .mistake-example code {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+    }
+
+    .mistake-example .note {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-left: auto;
+    }
+
+    /* Size Options */
+    .size-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Children Patterns Section */
+    #children {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 50%, var(--bg-dark) 100%);
+    }
+
+    .children-patterns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 1000px) {
+      .children-patterns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pattern-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .pattern-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pattern-number {
+      font-size: 0.75rem;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .pattern-header h3 {
+      font-size: 1.1rem;
+    }
+
+    .pattern-demo {
+      padding: 24px;
+      background: var(--bg-elevated);
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .children-tag {
+      display: inline-block;
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-green);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+    }
+
+    .layout-wrapper-demo {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .sidebar-demo {
+      width: 80px;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      padding: 16px 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .main-content-demo {
+      flex: 1;
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 16px;
+      border: 2px dashed var(--accent-blue);
+    }
+
+    .main-content-demo p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .modal-demo {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+    }
+
+    .modal-demo-content {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      border: 2px dashed var(--accent-blue);
+    }
+
+    .modal-demo-content p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .card-demo {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 2px dashed var(--accent-blue);
+      width: 100%;
+    }
+
+    .card-demo h4 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .card-demo p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .card-demo button {
+      padding: 8px 16px;
+      background: var(--accent-green);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .pattern-code {
+      padding: 16px;
+      background: var(--bg-dark);
+    }
+
+    .pattern-code pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .key-takeaway {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px 30px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .takeaway-icon {
+      font-size: 2rem;
+    }
+
+    .takeaway-content h4 {
+      margin-bottom: 8px;
+    }
+
+    .takeaway-content p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .takeaway-content code {
+      background: var(--bg-elevated);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-green);
+    }
+
+    /* Props Playground */
+    .props-playground {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .playground-header {
+      padding: 20px 30px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .playground-header h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .playground-header p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .playground-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 800px) {
+      .playground-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .playground-controls {
+      padding: 30px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .playground-preview {
+      padding: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-elevated);
+    }
+
+    .control-group {
+      margin-bottom: 24px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .control-group input[type="text"],
+    .control-group input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .control-group input:focus {
+      outline: none;
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 3px var(--accent-green-glow);
+    }
+
+    .color-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.active {
+      border-color: var(--text-primary);
+    }
+
+    .color-option.green { background: var(--accent-green); }
+    .color-option.pink { background: var(--accent-pink); }
+    .color-option.blue { background: var(--accent-blue); }
+    .color-option.purple { background: var(--accent-purple); }
+    .color-option.orange { background: var(--accent-orange); }
+
+    /* Button Preview */
+    .preview-button {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s;
+      color: #000;
+    }
+
+    .preview-button:hover {
+      transform: scale(1.05);
+    }
+
+    /* Live Code Display */
+    .live-code {
+      margin-top: 24px;
+      background: var(--bg-dark);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    /* Children Prop Section */
+    #children {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 50%, var(--bg-dark) 100%);
+    }
+
+    .children-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .children-demo {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .children-visual {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 30px;
+      border: 1px solid var(--border-color);
+    }
+
+    .wrapper-demo {
+      border: 2px dashed var(--accent-blue);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+    }
+
+    .wrapper-label {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--bg-card);
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .children-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .child-item {
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .child-item h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .child-item p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Component Composition */
+    #composition {
+      background: var(--bg-dark);
+    }
+
+    .composition-showcase {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .showcase-preview {
+      padding: 40px;
+      background: var(--bg-elevated);
+      display: flex;
+      justify-content: center;
+    }
+
+    .showcase-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      overflow: hidden;
+      max-width: 350px;
+      width: 100%;
+      border: 1px solid var(--border-color);
+    }
+
+    .showcase-card-header {
+      padding: 20px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      position: relative;
+    }
+
+    .showcase-card-header::after {
+      content: '<Header />';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.7rem;
+      background: rgba(0,0,0,0.3);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .showcase-card-body {
+      padding: 24px;
+      position: relative;
+    }
+
+    .showcase-card-body::after {
+      content: '<Body />';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.7rem;
+      background: var(--bg-elevated);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    .showcase-card-body h4 {
+      margin-bottom: 8px;
+    }
+
+    .showcase-card-body p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .showcase-card-footer {
+      padding: 16px 24px;
+      background: var(--bg-elevated);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .showcase-card-footer::after {
+      content: '<Footer />';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.7rem;
+      background: var(--bg-card);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    .showcase-card-footer span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .showcase-card-footer button {
+      padding: 8px 16px;
+      background: var(--accent-green);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .showcase-code {
+      padding: 30px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    /* Tips Section */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .tips-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tip-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 28px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tip-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+
+    .tip-card h4 {
+      margin-bottom: 10px;
+    }
+
+    .tip-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* Navigation Footer */
+    .nav-footer {
+      background: var(--bg-card);
+      padding: 40px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .nav-footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-footer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      padding: 16px 24px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+
+    .nav-footer-link:hover {
+      background: var(--bg-dark);
+    }
+
+    .nav-footer-link.next {
+      flex-direction: row-reverse;
+    }
+
+    .nav-footer-link span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .nav-footer-link strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+    }
+
+    footer p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-content">
+      <div class="nav-left">
+        <a href="index.html" class="back-btn">← Back</a>
+        <span class="logo">Components & Props</span>
+      </div>
+      <div class="nav-links">
+        <a href="#what-is-component">Components</a>
+        <a href="#props">Props</a>
+        <a href="#children">Children</a>
+        <a href="#composition">Composition</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Module 01</div>
+      <h1>Components & Props</h1>
+      <p>Learn to build reusable UI pieces and pass data between them - the foundation of React and Next.js</p>
+    </div>
+  </section>
+
+  <!-- What is a Component -->
+  <section id="what-is-component">
+    <div class="container">
+      <div class="section-header">
+        <h2>What is a Component?</h2>
+        <p>Components are the building blocks of any React application</p>
+      </div>
+
+      <div class="concept-grid">
+        <div class="concept-text">
+          <h3>Think of Components as LEGO Blocks</h3>
+          <p>Just like LEGO blocks, components are small, reusable pieces that you can combine to build something bigger. Each component handles its own piece of the UI.</p>
+          <p>A component can be as simple as a button, or as complex as an entire page. The key is that each component has a single responsibility.</p>
+          
+          <div class="building-blocks">
+            <div class="block-item">
+              <div class="block-icon">📦</div>
+              <div class="block-content">
+                <h4>Self-Contained</h4>
+                <p>Each component manages its own markup and logic</p>
+              </div>
+            </div>
+            <div class="block-item">
+              <div class="block-icon">♻️</div>
+              <div class="block-content">
+                <h4>Reusable</h4>
+                <p>Use the same component multiple times with different data</p>
+              </div>
+            </div>
+            <div class="block-item">
+              <div class="block-icon">🧩</div>
+              <div class="block-content">
+                <h4>Composable</h4>
+                <p>Combine small components to build complex UIs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="concept-visual">
+          <div class="interactive-demo">
+            <div class="demo-header">
+              <h3>🎯 Your First Component</h3>
+            </div>
+            <div class="demo-body">
+              <div class="demo-code">
+                <div class="code-block">
+                  <span class="code-line"><span class="code-comment">// A simple functional component</span></span>
+                  <span class="code-line highlight"><span class="code-keyword">function</span> <span class="code-function">UserCard</span>() {</span>
+                  <span class="code-line">  <span class="code-keyword">return</span> (</span>
+                  <span class="code-line">    <span class="code-tag">&lt;div</span> <span class="code-attr">className</span>=<span class="code-string">"card"</span><span class="code-tag">&gt;</span></span>
+                  <span class="code-line">      <span class="code-tag">&lt;img</span> <span class="code-attr">src</span>=<span class="code-string">"avatar.png"</span> <span class="code-tag">/&gt;</span></span>
+                  <span class="code-line">      <span class="code-tag">&lt;h2&gt;</span>John Doe<span class="code-tag">&lt;/h2&gt;</span></span>
+                  <span class="code-line">      <span class="code-tag">&lt;p&gt;</span>Developer<span class="code-tag">&lt;/p&gt;</span></span>
+                  <span class="code-line">      <span class="code-tag">&lt;button&gt;</span>Follow<span class="code-tag">&lt;/button&gt;</span></span>
+                  <span class="code-line">    <span class="code-tag">&lt;/div&gt;</span></span>
+                  <span class="code-line">  )</span>
+                  <span class="code-line">}</span>
+                </div>
+              </div>
+              <div class="demo-preview">
+                <div class="preview-card">
+                  <div class="preview-card-avatar">👨‍💻</div>
+                  <h4>John Doe</h4>
+                  <p>Developer</p>
+                  <button class="preview-card-btn">Follow</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Props Section -->
+  <section id="props">
+    <div class="container">
+      <div class="section-header">
+        <h2>What are Props? 🤔</h2>
+        <p>Props = data you pass from a parent component to a child component</p>
+      </div>
+
+      <!-- Simple Explanation -->
+      <div class="simple-explanation">
+        <div class="explanation-card">
+          <div class="explanation-icon">💡</div>
+          <div class="explanation-content">
+            <h3>Think of props like function arguments</h3>
+            <p>Just like you pass arguments to a function, you pass props to a component.</p>
+            <div class="mental-model">
+              <code>Component(props)</code> <span>=</span> <code>function(arguments)</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Props Flow Visualization -->
+      <div class="props-flow">
+        <div class="props-flow-item parent">
+          <h4>Parent</h4>
+          <p>Has the data</p>
+        </div>
+        <span class="flow-arrow">↓ props</span>
+        <div class="props-flow-item child">
+          <h4>Child</h4>
+          <p>Receives data</p>
+        </div>
+      </div>
+
+      <!-- Basic Example -->
+      <div class="code-example-section">
+        <h3>Basic Example</h3>
+        <p class="section-desc">A simple button component that receives text as a prop</p>
+        
+        <div class="code-split">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge child-badge">1️⃣ Child Component</span>
+              <span class="file-name">components/Button.jsx</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Button</span>(<span class="code-variable">props</span>) {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;button&gt;</span>{<span class="code-variable">props.text</span>}<span class="code-tag">&lt;/button&gt;</span>
+}</code></pre>
+          </div>
+          
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge parent-badge">2️⃣ Parent Component</span>
+              <span class="file-name">app/page.jsx</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">import</span> Button <span class="code-keyword">from</span> <span class="code-string">"@/components/Button"</span>
+
+<span class="code-keyword">export default function</span> <span class="code-function">Home</span>() {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;Button</span> <span class="code-attr">text</span>=<span class="code-string">"Click me"</span> <span class="code-tag">/&gt;</span>
+}</code></pre>
+          </div>
+        </div>
+        
+        <div class="result-indicator">
+          <span>➡️</span> <code>"Click me"</code> is passed as a prop to <code>Button</code>
+        </div>
+      </div>
+
+      <!-- Destructuring Props -->
+      <div class="code-example-section highlight-section">
+        <div class="best-practice-badge">✅ BEST PRACTICE</div>
+        <h3>Destructuring Props</h3>
+        <p class="section-desc">Instead of <code>props.text</code>, destructure directly — it's cleaner! ✨</p>
+        
+        <div class="code-comparison">
+          <div class="code-panel before">
+            <div class="code-panel-header">
+              <span class="comparison-badge bad">❌ Before</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">function</span> <span class="code-function">Button</span>(<span class="code-variable">props</span>) {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;button&gt;</span>{<span class="code-variable">props.text</span>}<span class="code-tag">&lt;/button&gt;</span>
+}</code></pre>
+          </div>
+          
+          <div class="code-panel after">
+            <div class="code-panel-header">
+              <span class="comparison-badge good">✅ After</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">function</span> <span class="code-function">Button</span>({ <span class="code-variable">text</span> }) {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;button&gt;</span>{<span class="code-variable">text</span>}<span class="code-tag">&lt;/button&gt;</span>
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multiple Props -->
+      <div class="code-example-section">
+        <h3>Passing Multiple Props</h3>
+        <p class="section-desc">You can pass as many props as you need</p>
+        
+        <div class="code-split">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge child-badge">Child</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Card</span>({ <span class="code-variable">title</span>, <span class="code-variable">description</span> }) {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div&gt;</span>
+      <span class="code-tag">&lt;h2&gt;</span>{<span class="code-variable">title</span>}<span class="code-tag">&lt;/h2&gt;</span>
+      <span class="code-tag">&lt;p&gt;</span>{<span class="code-variable">description</span>}<span class="code-tag">&lt;/p&gt;</span>
+    <span class="code-tag">&lt;/div&gt;</span>
+  )
+}</code></pre>
+          </div>
+          
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge parent-badge">Parent</span>
+            </div>
+            <pre class="code-block"><code><span class="code-tag">&lt;Card</span> 
+  <span class="code-attr">title</span>=<span class="code-string">"Next.js"</span>
+  <span class="code-attr">description</span>=<span class="code-string">"React framework"</span>
+<span class="code-tag">/&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Props are READ-ONLY -->
+      <div class="code-example-section warning-section">
+        <div class="warning-badge">⚠️ IMPORTANT</div>
+        <h3>Props are READ-ONLY</h3>
+        <p class="section-desc">You cannot change props inside the child component</p>
+        
+        <div class="code-comparison">
+          <div class="code-panel wrong">
+            <div class="code-panel-header">
+              <span class="comparison-badge bad">❌ Wrong</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">function</span> <span class="code-function">Button</span>({ <span class="code-variable">text</span> }) {
+  <span class="code-variable">text</span> = <span class="code-string">"Hello"</span> <span class="code-comment">// ❌ Never do this!</span>
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;button&gt;</span>{<span class="code-variable">text</span>}<span class="code-tag">&lt;/button&gt;</span>
+}</code></pre>
+          </div>
+          
+          <div class="code-panel right">
+            <div class="code-panel-header">
+              <span class="comparison-badge good">✅ Correct</span>
+            </div>
+            <pre class="code-block"><code><span class="code-comment">// Pass new props from parent instead</span>
+<span class="code-tag">&lt;Button</span> <span class="code-attr">text</span>=<span class="code-string">"Hello"</span> <span class="code-tag">/&gt;</span>
+<span class="code-tag">&lt;Button</span> <span class="code-attr">text</span>=<span class="code-string">"World"</span> <span class="code-tag">/&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Passing Functions as Props -->
+      <div class="code-example-section">
+        <h3>Passing Functions as Props 🔁</h3>
+        <p class="section-desc">Child can trigger logic that lives in the parent</p>
+        
+        <div class="code-split">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge parent-badge">Parent</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Home</span>() {
+  <span class="code-keyword">function</span> <span class="code-function">handleClick</span>() {
+    <span class="code-function">alert</span>(<span class="code-string">"Button clicked!"</span>)
+  }
+
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;Button</span> <span class="code-attr">onClick</span>={<span class="code-variable">handleClick</span>} <span class="code-tag">/&gt;</span>
+}</code></pre>
+          </div>
+          
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge child-badge">Child</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Button</span>({ <span class="code-variable">onClick</span> }) {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;button</span> <span class="code-attr">onClick</span>={<span class="code-variable">onClick</span>}<span class="code-tag">&gt;</span>
+      Click
+    <span class="code-tag">&lt;/button&gt;</span>
+  )
+}</code></pre>
+          </div>
+        </div>
+        
+        <div class="result-indicator">
+          <span>➡️</span> Child triggers logic in parent 👍
+        </div>
+      </div>
+
+      <!-- Children Prop -->
+      <div class="code-example-section highlight-section">
+        <div class="important-badge">🔥 VERY IMPORTANT</div>
+        <h3>The <code>children</code> Prop</h3>
+        <p class="section-desc">Everything between opening and closing tags becomes <code>children</code></p>
+        
+        <div class="code-split">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge child-badge">Child</span>
+            </div>
+            <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Box</span>({ <span class="code-variable">children</span> }) {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div</span> <span class="code-attr">className</span>=<span class="code-string">"border"</span><span class="code-tag">&gt;</span>
+      {<span class="code-variable">children</span>}
+    <span class="code-tag">&lt;/div&gt;</span>
+  )
+}</code></pre>
+          </div>
+          
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="file-badge parent-badge">Parent</span>
+            </div>
+            <pre class="code-block"><code><span class="code-tag">&lt;Box&gt;</span>
+  <span class="code-tag">&lt;h1&gt;</span>Hello<span class="code-tag">&lt;/h1&gt;</span>
+  <span class="code-tag">&lt;p&gt;</span>This is inside the box<span class="code-tag">&lt;/p&gt;</span>
+<span class="code-tag">&lt;/Box&gt;</span></code></pre>
+          </div>
+        </div>
+        
+        <div class="children-visual-demo">
+          <div class="wrapper-demo">
+            <span class="wrapper-label">&lt;Box&gt;</span>
+            <div class="children-content">
+              <h4>Hello</h4>
+              <p>This is inside the box</p>
+            </div>
+            <span class="wrapper-label-end">&lt;/Box&gt;</span>
+          </div>
+          <div class="result-indicator" style="margin-top: 16px;">
+            <span>➡️</span> Everything inside <code>&lt;Box&gt;...&lt;/Box&gt;</code> becomes <code>children</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Props in Server Components -->
+      <div class="code-example-section">
+        <h3>Props in Next.js Server Components 🧠</h3>
+        <p class="section-desc">By default, App Router components are server components. Props still work the same!</p>
+        
+        <div class="code-panel single">
+          <div class="code-panel-header">
+            <span class="file-name">app/[slug]/page.jsx</span>
+          </div>
+          <pre class="code-block"><code><span class="code-keyword">export default function</span> <span class="code-function">Page</span>({ <span class="code-variable">params</span> }) {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;h1&gt;</span>{<span class="code-variable">params.slug</span>}<span class="code-tag">&lt;/h1&gt;</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Common Mistakes -->
+      <div class="mistakes-section">
+        <h3>Common Mistakes ❌</h3>
+        <div class="mistakes-grid">
+          <div class="mistake-card">
+            <div class="mistake-header">
+              <span class="mistake-icon">1</span>
+              <h4>Forgetting <code>{}</code> for JS values</h4>
+            </div>
+            <div class="mistake-examples">
+              <div class="mistake-example wrong">
+                <span class="comparison-badge bad">❌</span>
+                <code>&lt;Button count="5" /&gt;</code>
+                <span class="note">This is a string!</span>
+              </div>
+              <div class="mistake-example right">
+                <span class="comparison-badge good">✅</span>
+                <code>&lt;Button count={5} /&gt;</code>
+                <span class="note">This is a number</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mistake-card">
+            <div class="mistake-header">
+              <span class="mistake-icon">2</span>
+              <h4>Trying to modify props</h4>
+            </div>
+            <div class="mistake-examples">
+              <div class="mistake-example wrong">
+                <span class="comparison-badge bad">❌</span>
+                <code>text = "new value"</code>
+                <span class="note">Props are read-only!</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mistake-card">
+            <div class="mistake-header">
+              <span class="mistake-icon">3</span>
+              <h4>Using props without passing them</h4>
+            </div>
+            <div class="mistake-examples">
+              <div class="mistake-example wrong">
+                <span class="comparison-badge bad">❌</span>
+                <code>&lt;Card /&gt;</code> → <code>title</code> is <code>undefined</code>
+              </div>
+              <div class="mistake-example right">
+                <span class="comparison-badge good">✅</span>
+                <code>&lt;Card title="Hello" /&gt;</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Props Playground -->
+      <div class="props-playground">
+        <div class="playground-header">
+          <h3>🎮 Props Playground</h3>
+          <p>Change the props below and watch the component update in real-time!</p>
+        </div>
+        <div class="playground-body">
+          <div class="playground-controls">
+            <div class="control-group">
+              <label>text prop</label>
+              <input type="text" id="btn-text" value="Click Me" oninput="updateButtonPreview()" />
+            </div>
+            <div class="control-group">
+              <label>size prop</label>
+              <div class="size-options">
+                <button class="demo-tab active" data-size="small" onclick="setSize('small', this)">small</button>
+                <button class="demo-tab" data-size="medium" onclick="setSize('medium', this)">medium</button>
+                <button class="demo-tab" data-size="large" onclick="setSize('large', this)">large</button>
+              </div>
+            </div>
+            <div class="control-group">
+              <label>color prop</label>
+              <div class="color-options">
+                <div class="color-option green active" onclick="setColor('green', this)"></div>
+                <div class="color-option pink" onclick="setColor('pink', this)"></div>
+                <div class="color-option blue" onclick="setColor('blue', this)"></div>
+                <div class="color-option purple" onclick="setColor('purple', this)"></div>
+                <div class="color-option orange" onclick="setColor('orange', this)"></div>
+              </div>
+            </div>
+
+            <div class="live-code" id="live-code">
+              <span class="code-tag">&lt;Button</span><br>
+              &nbsp;&nbsp;<span class="code-attr">text</span>=<span class="code-string">"Click Me"</span><br>
+              &nbsp;&nbsp;<span class="code-attr">size</span>=<span class="code-string">"small"</span><br>
+              &nbsp;&nbsp;<span class="code-attr">color</span>=<span class="code-string">"green"</span><br>
+              <span class="code-tag">/&gt;</span>
+            </div>
+          </div>
+          <div class="playground-preview">
+            <button class="preview-button" id="preview-btn" style="background: var(--accent-green); padding: 10px 20px; font-size: 0.9rem;">Click Me</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Children Deep Dive Section -->
+  <section id="children">
+    <div class="container">
+      <div class="section-header">
+        <h2>Children in Action 🎬</h2>
+        <p>See how the children prop enables powerful composition patterns</p>
+      </div>
+
+      <div class="children-patterns">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-number">Pattern 1</span>
+            <h3>Layout Wrapper</h3>
+          </div>
+          <div class="pattern-demo">
+            <div class="layout-wrapper-demo">
+              <div class="sidebar-demo">Sidebar</div>
+              <div class="main-content-demo">
+                <span class="children-tag">{children}</span>
+                <p>Your page content here</p>
+              </div>
+            </div>
+          </div>
+          <div class="pattern-code">
+            <pre><code><span class="code-keyword">function</span> <span class="code-function">Layout</span>({ <span class="code-variable">children</span> }) {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div</span> <span class="code-attr">className</span>=<span class="code-string">"layout"</span><span class="code-tag">&gt;</span>
+      <span class="code-tag">&lt;Sidebar /&gt;</span>
+      <span class="code-tag">&lt;main&gt;</span>{<span class="code-variable">children</span>}<span class="code-tag">&lt;/main&gt;</span>
+    <span class="code-tag">&lt;/div&gt;</span>
+  )
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-number">Pattern 2</span>
+            <h3>Modal / Dialog</h3>
+          </div>
+          <div class="pattern-demo">
+            <div class="modal-demo">
+              <div class="modal-demo-content">
+                <span class="children-tag">{children}</span>
+                <p>Any content!</p>
+              </div>
+            </div>
+          </div>
+          <div class="pattern-code">
+            <pre><code><span class="code-keyword">function</span> <span class="code-function">Modal</span>({ <span class="code-variable">children</span>, <span class="code-variable">isOpen</span> }) {
+  <span class="code-keyword">if</span> (!<span class="code-variable">isOpen</span>) <span class="code-keyword">return null</span>
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div</span> <span class="code-attr">className</span>=<span class="code-string">"modal"</span><span class="code-tag">&gt;</span>
+      {<span class="code-variable">children</span>}
+    <span class="code-tag">&lt;/div&gt;</span>
+  )
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-number">Pattern 3</span>
+            <h3>Card Container</h3>
+          </div>
+          <div class="pattern-demo">
+            <div class="card-demo">
+              <span class="children-tag">{children}</span>
+              <h4>Title</h4>
+              <p>Description</p>
+              <button>Action</button>
+            </div>
+          </div>
+          <div class="pattern-code">
+            <pre><code><span class="code-tag">&lt;Card&gt;</span>
+  <span class="code-tag">&lt;h4&gt;</span>Title<span class="code-tag">&lt;/h4&gt;</span>
+  <span class="code-tag">&lt;p&gt;</span>Description<span class="code-tag">&lt;/p&gt;</span>
+  <span class="code-tag">&lt;button&gt;</span>Action<span class="code-tag">&lt;/button&gt;</span>
+<span class="code-tag">&lt;/Card&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="key-takeaway">
+        <div class="takeaway-icon">💡</div>
+        <div class="takeaway-content">
+          <h4>Key Takeaway</h4>
+          <p>The <code>children</code> prop makes your components flexible. Instead of hardcoding content, let the parent decide what goes inside!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Component Composition -->
+  <section id="composition">
+    <div class="container">
+      <div class="section-header">
+        <h2>Component Composition</h2>
+        <p>Build complex UIs by combining simple components together</p>
+      </div>
+
+      <div class="composition-showcase">
+        <div class="showcase-preview">
+          <div class="showcase-card">
+            <div class="showcase-card-header">
+              <h3 style="color: #000; font-size: 1.1rem;">Product Card</h3>
+            </div>
+            <div class="showcase-card-body">
+              <h4>Premium Headphones</h4>
+              <p>High-quality wireless headphones with noise cancellation.</p>
+              <div style="display: flex; gap: 8px;">
+                <span style="background: var(--bg-elevated); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;">Wireless</span>
+                <span style="background: var(--bg-elevated); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;">Bluetooth</span>
+              </div>
+            </div>
+            <div class="showcase-card-footer">
+              <span>$299.99</span>
+              <button>Add to Cart</button>
+            </div>
+          </div>
+        </div>
+        <div class="showcase-code">
+          <span class="code-line"><span class="code-comment">// Composed from smaller components</span></span>
+          <span class="code-line"><span class="code-keyword">function</span> <span class="code-function">ProductCard</span>({ <span class="code-variable">product</span> }) {</span>
+          <span class="code-line">  <span class="code-keyword">return</span> (</span>
+          <span class="code-line">    <span class="code-tag">&lt;Card&gt;</span></span>
+          <span class="code-line">      <span class="code-tag">&lt;CardHeader</span> <span class="code-attr">title</span>={<span class="code-variable">product.name</span>} <span class="code-tag">/&gt;</span></span>
+          <span class="code-line">      <span class="code-tag">&lt;CardBody&gt;</span></span>
+          <span class="code-line">        <span class="code-tag">&lt;Description</span> <span class="code-attr">text</span>={<span class="code-variable">product.desc</span>} <span class="code-tag">/&gt;</span></span>
+          <span class="code-line">        <span class="code-tag">&lt;TagList</span> <span class="code-attr">tags</span>={<span class="code-variable">product.tags</span>} <span class="code-tag">/&gt;</span></span>
+          <span class="code-line">      <span class="code-tag">&lt;/CardBody&gt;</span></span>
+          <span class="code-line">      <span class="code-tag">&lt;CardFooter&gt;</span></span>
+          <span class="code-line">        <span class="code-tag">&lt;Price</span> <span class="code-attr">amount</span>={<span class="code-variable">product.price</span>} <span class="code-tag">/&gt;</span></span>
+          <span class="code-line">        <span class="code-tag">&lt;AddToCartButton</span> <span class="code-attr">id</span>={<span class="code-variable">product.id</span>} <span class="code-tag">/&gt;</span></span>
+          <span class="code-line">      <span class="code-tag">&lt;/CardFooter&gt;</span></span>
+          <span class="code-line">    <span class="code-tag">&lt;/Card&gt;</span></span>
+          <span class="code-line">  )</span>
+          <span class="code-line">}</span>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div style="margin-top: 60px;">
+        <h3 style="text-align: center; margin-bottom: 30px;">Best Practices</h3>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <div class="tip-icon">🎯</div>
+            <h4>Single Responsibility</h4>
+            <p>Each component should do one thing well. If it's doing too much, break it into smaller components.</p>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">📝</div>
+            <h4>Descriptive Names</h4>
+            <p>Name components based on what they do, not how they look. Use PascalCase for component names.</p>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">🔄</div>
+            <h4>Keep Props Simple</h4>
+            <p>Pass only the data each component needs. Avoid passing entire objects when only one property is used.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Footer -->
+  <div class="nav-footer">
+    <div class="nav-footer-content">
+      <a href="index.html" class="nav-footer-link">
+        <span>←</span>
+        <div>
+          <span>Back to</span>
+          <strong>All Modules</strong>
+        </div>
+      </a>
+      <a href="how-react-works.html" class="nav-footer-link next">
+        <span>→</span>
+        <div>
+          <span>Next Module</span>
+          <strong>How React Works</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Built for learning Next.js • <a href="https://nextjs.org/docs" target="_blank">Official Docs</a></p>
+  </footer>
+
+  <script>
+    // Props Playground
+    let currentSize = 'small';
+    let currentColor = 'green';
+
+    const sizeStyles = {
+      small: { padding: '10px 20px', fontSize: '0.9rem' },
+      medium: { padding: '14px 28px', fontSize: '1rem' },
+      large: { padding: '18px 36px', fontSize: '1.1rem' }
+    };
+
+    const colorMap = {
+      green: 'var(--accent-green)',
+      pink: 'var(--accent-pink)',
+      blue: 'var(--accent-blue)',
+      purple: 'var(--accent-purple)',
+      orange: 'var(--accent-orange)'
+    };
+
+    function updateButtonPreview() {
+      const text = document.getElementById('btn-text').value || 'Button';
+      const btn = document.getElementById('preview-btn');
+      btn.textContent = text;
+      updateLiveCode();
+    }
+
+    function setSize(size, el) {
+      currentSize = size;
+      const btn = document.getElementById('preview-btn');
+      const styles = sizeStyles[size];
+      btn.style.padding = styles.padding;
+      btn.style.fontSize = styles.fontSize;
+
+      // Update active state
+      document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      updateLiveCode();
+    }
+
+    function setColor(color, el) {
+      currentColor = color;
+      const btn = document.getElementById('preview-btn');
+      btn.style.background = colorMap[color];
+
+      // Update active state
+      document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      updateLiveCode();
+    }
+
+    function updateLiveCode() {
+      const text = document.getElementById('btn-text').value || 'Button';
+      const codeEl = document.getElementById('live-code');
+      codeEl.innerHTML = `
+        <span class="code-tag">&lt;Button</span><br>
+        &nbsp;&nbsp;<span class="code-attr">text</span>=<span class="code-string">"${text}"</span><br>
+        &nbsp;&nbsp;<span class="code-attr">size</span>=<span class="code-string">"${currentSize}"</span><br>
+        &nbsp;&nbsp;<span class="code-attr">color</span>=<span class="code-string">"${currentColor}"</span><br>
+        <span class="code-tag">/&gt;</span>
+      `;
+    }
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

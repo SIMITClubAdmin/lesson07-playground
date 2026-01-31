@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How React Works - Learn Next.js</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-elevated: #1a1a25;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent-green: #00d4aa;
+      --accent-green-glow: rgba(0, 212, 170, 0.3);
+      --accent-pink: #ff6b9d;
+      --accent-pink-glow: rgba(255, 107, 157, 0.3);
+      --accent-blue: #4d9fff;
+      --accent-blue-glow: rgba(77, 159, 255, 0.3);
+      --accent-purple: #a855f7;
+      --accent-purple-glow: rgba(168, 85, 247, 0.3);
+      --accent-orange: #f97316;
+      --accent-yellow: #eab308;
+      --border-color: #2a2a3a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 16px 40px;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    nav .nav-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent-purple);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 140px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-purple-glow) 0%, transparent 70%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--accent-purple);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+
+    .hero h1 .highlight {
+      color: var(--accent-purple);
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .time-estimate {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .time-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Section */
+    section {
+      padding: 100px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Section 1: Browser Understanding */
+    #browser {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 100%);
+    }
+
+    .browser-understanding {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 800px) {
+      .browser-understanding {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .understanding-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 2px solid var(--border-color);
+    }
+
+    .understanding-card.knows {
+      border-color: var(--accent-green);
+    }
+
+    .understanding-card.doesnt-know {
+      border-color: var(--accent-pink);
+    }
+
+    .understanding-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 1.3rem;
+    }
+
+    .understanding-card.knows h3 {
+      color: var(--accent-green);
+    }
+
+    .understanding-card.doesnt-know h3 {
+      color: var(--accent-pink);
+    }
+
+    .understanding-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .understanding-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+    }
+
+    .understanding-item .icon {
+      font-size: 1.8rem;
+    }
+
+    .understanding-item .text {
+      flex: 1;
+    }
+
+    .understanding-item h4 {
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+
+    .understanding-item p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .understanding-item .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .understanding-card.knows .badge {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-green);
+    }
+
+    .understanding-card.doesnt-know .badge {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-pink);
+    }
+
+    /* Teaching Line */
+    .teaching-line {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(77, 159, 255, 0.1));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 24px 30px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .teaching-line .emoji {
+      font-size: 1.5rem;
+      margin-right: 12px;
+    }
+
+    .teaching-line code {
+      background: var(--bg-card);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-purple);
+    }
+
+    /* Section 2: React Definition */
+    #definition {
+      background: var(--bg-dark);
+    }
+
+    .big-definition {
+      background: var(--bg-card);
+      border-radius: 32px;
+      padding: 60px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .big-definition::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--accent-purple-glow), transparent);
+      pointer-events: none;
+    }
+
+    .big-definition .react-logo {
+      font-size: 5rem;
+      margin-bottom: 24px;
+    }
+
+    .big-definition h3 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .big-definition .definition-text {
+      font-size: 1.4rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto 30px;
+      line-height: 1.7;
+    }
+
+    .big-definition .definition-text strong {
+      color: var(--accent-purple);
+    }
+
+    .magic-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--bg-elevated);
+      border-radius: 100px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* Section 3: Old Way vs React Way */
+    #comparison {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 50%, var(--bg-dark) 100%);
+    }
+
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 900px) {
+      .comparison-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comparison-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid var(--border-color);
+    }
+
+    .comparison-card.old-way {
+      border-color: var(--accent-pink);
+    }
+
+    .comparison-card.react-way {
+      border-color: var(--accent-green);
+    }
+
+    .comparison-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .comparison-header h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.2rem;
+    }
+
+    .comparison-card.old-way .comparison-header h3 {
+      color: var(--accent-pink);
+    }
+
+    .comparison-card.react-way .comparison-header h3 {
+      color: var(--accent-green);
+    }
+
+    .comparison-body {
+      padding: 24px;
+    }
+
+    .comparison-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .comparison-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .comparison-step .num {
+      width: 24px;
+      height: 24px;
+      background: var(--bg-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .comparison-code {
+      background: var(--bg-dark);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .comparison-code pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .comparison-tagline {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    .comparison-card.old-way .comparison-tagline {
+      color: var(--accent-pink);
+    }
+
+    .comparison-card.react-way .comparison-tagline {
+      color: var(--accent-green);
+    }
+
+    .vs-badge {
+      width: 60px;
+      height: 60px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin: 0 auto;
+    }
+
+    /* Interactive Demo */
+    .interactive-comparison {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .demo-header {
+      padding: 20px 24px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .demo-header h4 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 800px) {
+      .demo-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .demo-panel {
+      padding: 30px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .demo-panel:last-child {
+      border-right: none;
+    }
+
+    .demo-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .demo-panel-header h5 {
+      font-size: 1rem;
+    }
+
+    .demo-panel-header.old h5 {
+      color: var(--accent-pink);
+    }
+
+    .demo-panel-header.react h5 {
+      color: var(--accent-green);
+    }
+
+    .counter-preview {
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .counter-value {
+      font-size: 4rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 16px;
+    }
+
+    .demo-panel.old .counter-value {
+      color: var(--accent-pink);
+    }
+
+    .demo-panel.react .counter-value {
+      color: var(--accent-green);
+    }
+
+    .counter-btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .demo-panel.old .counter-btn {
+      background: var(--accent-pink);
+      color: #fff;
+    }
+
+    .demo-panel.react .counter-btn {
+      background: var(--accent-green);
+      color: #000;
+    }
+
+    .counter-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .dom-operations {
+      background: var(--bg-dark);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .dom-operations h6 {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dom-op-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .dom-op {
+      padding: 6px 10px;
+      border-radius: 4px;
+      opacity: 0.3;
+      transition: all 0.3s;
+    }
+
+    .dom-op.active {
+      opacity: 1;
+    }
+
+    .demo-panel.old .dom-op.active {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-pink);
+    }
+
+    .demo-panel.react .dom-op.active {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-green);
+    }
+
+    /* Todo Demo */
+    .todo-preview {
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .todo-item {
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      border-left: 3px solid var(--border-color);
+      transition: all 0.3s;
+    }
+
+    .todo-item.new {
+      border-left-color: var(--accent-green);
+      background: rgba(0, 212, 170, 0.1);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .todo-item.flash {
+      animation: flash 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes flash {
+      0%, 100% { background: var(--bg-card); }
+      50% { background: rgba(255, 107, 157, 0.2); }
+    }
+
+    .todo-btn {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 2px dashed var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .todo-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text-primary);
+    }
+
+    .todo-btn.old-btn:hover {
+      border-color: var(--accent-pink);
+      color: var(--accent-pink);
+    }
+
+    .todo-btn.react-btn:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .todo-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Teaching Point */
+    .teaching-point {
+      padding: 24px 30px;
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .teaching-point-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .teaching-point-header .emoji {
+      font-size: 1.5rem;
+    }
+
+    .teaching-point-header h5 {
+      font-size: 1rem;
+      color: var(--accent-yellow);
+    }
+
+    .teaching-point-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .insight-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .insight-row, .analogy-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .insight-item {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .insight-item.bad {
+      background: rgba(255, 107, 157, 0.1);
+      border-left: 3px solid var(--accent-pink);
+    }
+
+    .insight-item.good {
+      background: rgba(0, 212, 170, 0.1);
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .insight-item strong {
+      color: var(--text-primary);
+    }
+
+    .analogy-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .analogy-card {
+      padding: 20px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+
+    .analogy-card.highlight {
+      border-color: var(--accent-green);
+      background: rgba(0, 212, 170, 0.05);
+    }
+
+    .analogy-emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .analogy-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .analogy-card p strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Section 4: How React Updates */
+    #updates {
+      background: var(--bg-dark);
+    }
+
+    .update-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto 60px;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .flow-number {
+      width: 50px;
+      height: 50px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .flow-step.active .flow-number {
+      background: var(--accent-purple);
+      border-color: var(--accent-purple);
+      color: #000;
+    }
+
+    .flow-content {
+      flex: 1;
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s;
+    }
+
+    .flow-step.active .flow-content {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 30px var(--accent-purple-glow);
+    }
+
+    .flow-content h4 {
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+    }
+
+    .flow-content p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .flow-arrow {
+      width: 50px;
+      display: flex;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+    }
+
+    /* Reconciliation Visual */
+    .reconciliation-demo {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .recon-header {
+      padding: 20px 24px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .recon-header h4 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .recon-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .recon-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .recon-btn:hover {
+      background: var(--bg-dark);
+    }
+
+    .recon-btn.primary {
+      background: var(--accent-purple);
+      border-color: var(--accent-purple);
+      color: #fff;
+    }
+
+    .recon-body {
+      padding: 30px;
+    }
+
+    .recon-visual {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr 80px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 1000px) {
+      .recon-visual {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+
+    .dom-tree {
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .dom-tree-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dom-tree-header h5 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .dom-tree-header span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .tree-node {
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .tree-node.changed {
+      border-color: var(--accent-orange);
+      background: rgba(249, 115, 22, 0.1);
+    }
+
+    .tree-node.unchanged {
+      opacity: 0.5;
+    }
+
+    .tree-children {
+      margin-left: 20px;
+      padding-left: 16px;
+      border-left: 2px solid var(--border-color);
+    }
+
+    .recon-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+
+    .recon-arrow .arrow {
+      font-size: 2rem;
+    }
+
+    .recon-arrow span {
+      font-size: 0.75rem;
+      text-align: center;
+    }
+
+    /* Section 5: Virtual DOM Deep Dive */
+    #virtual-dom {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 50%, var(--bg-dark) 100%);
+    }
+
+    .problem-box {
+      background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 107, 157, 0.05));
+      border: 1px solid rgba(255, 107, 157, 0.3);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 40px;
+    }
+
+    .problem-box h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--accent-pink);
+    }
+
+    .problem-box p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .problem-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .problem-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .problem-item .icon {
+      font-size: 1.2rem;
+    }
+
+    /* Virtual DOM Explanation */
+    .vdom-explanation {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 40px;
+    }
+
+    .vdom-explanation h3 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .vdom-what {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 700px) {
+      .vdom-what {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .vdom-is, .vdom-isnt {
+      padding: 24px;
+      border-radius: 16px;
+    }
+
+    .vdom-is {
+      background: rgba(0, 212, 170, 0.1);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+    }
+
+    .vdom-isnt {
+      background: rgba(255, 107, 157, 0.1);
+      border: 1px solid rgba(255, 107, 157, 0.3);
+    }
+
+    .vdom-is h4, .vdom-isnt h4 {
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    .vdom-is h4 {
+      color: var(--accent-green);
+    }
+
+    .vdom-isnt h4 {
+      color: var(--accent-pink);
+    }
+
+    .vdom-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .vdom-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .vdom-code-example {
+      background: var(--bg-dark);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .vdom-code-example h5 {
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .vdom-code-example pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    /* Speed Comparison */
+    .speed-comparison {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 40px;
+    }
+
+    .speed-comparison h3 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .speed-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .speed-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .speed-label {
+      width: 160px;
+      font-size: 0.9rem;
+    }
+
+    .speed-bar-track {
+      flex: 1;
+      height: 40px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .speed-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: width 1s ease-out;
+    }
+
+    .speed-bar-fill.slow {
+      background: linear-gradient(90deg, var(--accent-pink), #ff4777);
+      color: #fff;
+    }
+
+    .speed-bar-fill.fast {
+      background: linear-gradient(90deg, var(--accent-green), #00a886);
+      color: #000;
+    }
+
+    .speed-legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .speed-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .speed-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .speed-legend-dot.slow {
+      background: var(--accent-pink);
+    }
+
+    .speed-legend-dot.fast {
+      background: var(--accent-green);
+    }
+
+    /* Flow Diagram */
+    .flow-diagram {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 40px;
+    }
+
+    .flow-diagram h3 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .flow-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 700px) {
+      .flow-comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-column {
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .flow-column h4 {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .flow-column.old h4 {
+      color: var(--accent-pink);
+    }
+
+    .flow-column.react h4 {
+      color: var(--accent-green);
+    }
+
+    .flow-items {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-item {
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    .flow-column.old .flow-item {
+      border-left: 3px solid var(--accent-pink);
+    }
+
+    .flow-column.react .flow-item {
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .flow-item.highlight {
+      background: rgba(0, 212, 170, 0.1);
+      border-color: var(--accent-green);
+    }
+
+    .flow-arrow-down {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+    }
+
+    /* JSX Transformation */
+    .jsx-transform {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      margin-bottom: 40px;
+    }
+
+    .jsx-header {
+      padding: 20px 24px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .jsx-header h4 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .jsx-body {
+      display: grid;
+      grid-template-columns: 1fr 60px 1fr 60px 1fr;
+      padding: 30px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .jsx-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .jsx-step {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .jsx-step-header {
+      padding: 12px 16px;
+      background: var(--bg-dark);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .jsx-step-code {
+      padding: 16px;
+    }
+
+    .jsx-step-code pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .jsx-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+    }
+
+    /* Clarifications */
+    .clarifications {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .clarifications {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .clarification-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .clarification-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .clarification-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* Final Flow */
+    #final-flow {
+      background: var(--bg-dark);
+    }
+
+    .final-flow-diagram {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .final-flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .final-step {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .final-step:hover, .final-step.active {
+      border-color: var(--accent-purple);
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    .final-step-icon {
+      font-size: 2rem;
+    }
+
+    .final-step-content h5 {
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .final-step-content p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .final-arrow {
+      display: flex;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+    }
+
+    /* Navigation Footer */
+    .nav-footer {
+      background: var(--bg-card);
+      padding: 40px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .nav-footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-footer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      padding: 16px 24px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+
+    .nav-footer-link:hover {
+      background: var(--bg-dark);
+    }
+
+    .nav-footer-link.next {
+      flex-direction: row-reverse;
+    }
+
+    .nav-footer-link span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .nav-footer-link strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+    }
+
+    footer p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Code Colors */
+    .code-keyword { color: var(--accent-pink); }
+    .code-function { color: var(--accent-blue); }
+    .code-string { color: var(--accent-green); }
+    .code-tag { color: #e06c75; }
+    .code-attr { color: var(--accent-orange); }
+    .code-comment { color: var(--text-muted); }
+    .code-variable { color: var(--accent-yellow); }
+    .code-number { color: var(--accent-orange); }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .animate-pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-content">
+      <div class="nav-left">
+        <a href="index.html" class="back-btn">← Back</a>
+        <span class="logo">How React Works</span>
+      </div>
+      <div class="nav-links">
+        <a href="#browser">Browser</a>
+        <a href="#comparison">Old vs React</a>
+        <a href="#virtual-dom">Virtual DOM</a>
+        <a href="#final-flow">Flow</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Module 02</div>
+      <h1>How <span class="highlight">React</span> Works</h1>
+      <p>Understand React's magic — Virtual DOM, reconciliation, and why it makes UI updates efficient</p>
+    </div>
+  </section>
+
+  <!-- Section 1: Browser Understanding -->
+  <section id="browser">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">1️⃣ Introduction</div>
+        <h2>What the Browser Actually Understands</h2>
+        <p>Setting context — React is a tool, not magic</p>
+      </div>
+
+      <div class="browser-understanding">
+        <div class="understanding-card knows">
+          <h3>✅ Browser Knows</h3>
+          <div class="understanding-list">
+            <div class="understanding-item">
+              <span class="icon">📄</span>
+              <div class="text">
+                <h4>HTML</h4>
+                <p>Structure of the page</p>
+              </div>
+              <span class="badge">&lt;div&gt;</span>
+            </div>
+            <div class="understanding-item">
+              <span class="icon">🎨</span>
+              <div class="text">
+                <h4>CSS</h4>
+                <p>Styling and layout</p>
+              </div>
+              <span class="badge">style</span>
+            </div>
+            <div class="understanding-item">
+              <span class="icon">⚡</span>
+              <div class="text">
+                <h4>JavaScript</h4>
+                <p>Behavior and logic</p>
+              </div>
+              <span class="badge">script</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="understanding-card doesnt-know">
+          <h3>❌ Browser Doesn't Know</h3>
+          <div class="understanding-list">
+            <div class="understanding-item">
+              <span class="icon">⚛️</span>
+              <div class="text">
+                <h4>React</h4>
+                <p>Has no idea what this is</p>
+              </div>
+              <span class="badge">???</span>
+            </div>
+            <div class="understanding-item">
+              <span class="icon">▲</span>
+              <div class="text">
+                <h4>Next.js</h4>
+                <p>Never heard of it</p>
+              </div>
+              <span class="badge">???</span>
+            </div>
+            <div class="understanding-item">
+              <span class="icon">🧩</span>
+              <div class="text">
+                <h4>Components</h4>
+                <p>Not a browser concept</p>
+              </div>
+              <span class="badge">???</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="teaching-line">
+        <span class="emoji">💡</span>
+        React / Next.js are tools that help you <code>generate HTML + JS</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: React Definition -->
+  <section id="definition">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">2️⃣ Definition</div>
+        <h2>React in One Sentence</h2>
+      </div>
+
+      <div class="big-definition">
+        <div class="react-logo">⚛️</div>
+        <h3>What is React?</h3>
+        <p class="definition-text">
+          A JavaScript library that helps you <strong>update the UI efficiently</strong> when data changes.
+        </p>
+        <div class="magic-note">
+          ✨ That's it. No magic... okay, maybe some magic.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Old Way vs React Way -->
+  <section id="comparison">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">3️⃣ Mental Model</div>
+        <h2>The Big Mental Model</h2>
+        <p>Old way vs React way of thinking</p>
+      </div>
+
+      <div class="comparison-container">
+        <div class="comparison-card old-way">
+          <div class="comparison-header">
+            <h3>❌ Old Way (Vanilla JS)</h3>
+          </div>
+          <div class="comparison-body">
+            <div class="comparison-steps">
+              <div class="comparison-step">
+                <span class="num">1</span>
+                <span>Find elements manually</span>
+              </div>
+              <div class="comparison-step">
+                <span class="num">2</span>
+                <span>Update them manually</span>
+              </div>
+              <div class="comparison-step">
+                <span class="num">3</span>
+                <span>Keep track of state yourself</span>
+              </div>
+            </div>
+            <div class="comparison-code">
+              <pre><code><span class="code-variable">count</span>++;
+<span class="code-variable">document</span>.<span class="code-function">getElementById</span>(<span class="code-string">"count"</span>)
+  .<span class="code-variable">textContent</span> = <span class="code-variable">count</span>;</code></pre>
+            </div>
+            <div class="comparison-tagline">
+              You are the UI manager 😵‍💫
+            </div>
+          </div>
+        </div>
+
+        <div class="vs-badge">VS</div>
+
+        <div class="comparison-card react-way">
+          <div class="comparison-header">
+            <h3>✅ React Way</h3>
+          </div>
+          <div class="comparison-body">
+            <div class="comparison-steps">
+              <div class="comparison-step">
+                <span class="num">1</span>
+                <span>Describe what UI should look like</span>
+              </div>
+              <div class="comparison-step">
+                <span class="num">2</span>
+                <span>React figures out the rest</span>
+              </div>
+              <div class="comparison-step">
+                <span class="num">3</span>
+                <span>React updates the DOM for you</span>
+              </div>
+            </div>
+            <div class="comparison-code">
+              <pre><code><span class="code-keyword">function</span> <span class="code-function">Counter</span>() {
+  <span class="code-keyword">return</span> <span class="code-tag">&lt;h1&gt;</span>{<span class="code-variable">count</span>}<span class="code-tag">&lt;/h1&gt;</span>;
+}</code></pre>
+            </div>
+            <div class="comparison-tagline">
+              You say WHAT, React handles HOW ✨
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Demo -->
+      <div class="interactive-comparison">
+        <div class="demo-header">
+          <h4>🎮 See the Difference: Adding a Todo</h4>
+        </div>
+        <div class="demo-body">
+          <div class="demo-panel old">
+            <div class="demo-panel-header old">
+              <h5>❌ Vanilla JS Approach</h5>
+            </div>
+            <div class="todo-preview">
+              <div class="todo-list" id="old-todo-list">
+                <div class="todo-item">✓ Learn HTML</div>
+                <div class="todo-item">✓ Learn CSS</div>
+                <div class="todo-item">✓ Learn JavaScript</div>
+              </div>
+              <button class="todo-btn old-btn" onclick="addTodoOld()">+ Add "Learn React"</button>
+            </div>
+            <div class="dom-operations">
+              <h6>What happens:</h6>
+              <div class="dom-op-list" id="old-ops">
+                <div class="dom-op" id="old-op-1">1. Get container element</div>
+                <div class="dom-op" id="old-op-2">2. Clear ALL innerHTML 🗑️</div>
+                <div class="dom-op" id="old-op-3">3. Rebuild ENTIRE list</div>
+                <div class="dom-op" id="old-op-4">4. Rerender ALL 4 items</div>
+                <div class="dom-op" id="old-op-5">5. Browser repaints everything 😰</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="demo-panel react">
+            <div class="demo-panel-header react">
+              <h5>✅ React Approach</h5>
+            </div>
+            <div class="todo-preview">
+              <div class="todo-list" id="react-todo-list">
+                <div class="todo-item">✓ Learn HTML</div>
+                <div class="todo-item">✓ Learn CSS</div>
+                <div class="todo-item">✓ Learn JavaScript</div>
+              </div>
+              <button class="todo-btn react-btn" onclick="addTodoReact()">+ Add "Learn React"</button>
+            </div>
+            <div class="dom-operations">
+              <h6>What happens:</h6>
+              <div class="dom-op-list" id="react-ops">
+                <div class="dom-op" id="react-op-1">1. setTodos([...todos, new])</div>
+                <div class="dom-op" id="react-op-2">2. Create new Virtual DOM</div>
+                <div class="dom-op" id="react-op-3">3. Diff: "only 1 new item"</div>
+                <div class="dom-op" id="react-op-4">4. Append ONLY new item ✨</div>
+                <div class="dom-op" id="react-op-5">5. Other items untouched! 🎉</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Key Teaching Point -->
+        <div class="teaching-point">
+          <div class="teaching-point-header">
+            <span class="emoji">💡</span>
+            <h5>Key Insight</h5>
+          </div>
+          <div class="teaching-point-content">
+            <div class="insight-row">
+              <div class="insight-item bad">
+                <strong>Vanilla JS:</strong> Small UI = fine. Big UI = painful 😵‍💫
+              </div>
+              <div class="insight-item good">
+                <strong>React:</strong> Automatically detects what changed, no matter UI size ✨
+              </div>
+            </div>
+            <div class="analogy-row">
+              <div class="analogy-card">
+                <span class="analogy-emoji">🧱</span>
+                <p><strong>Vanilla JS:</strong> "Repaint the whole wall even if only one tile changed"</p>
+              </div>
+              <div class="analogy-card highlight">
+                <span class="analogy-emoji">🧩</span>
+                <p><strong>React:</strong> "Only replace the tile that changed"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: How React Updates -->
+  <section id="updates">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">4️⃣ Update Process</div>
+        <h2>How React Updates the Page</h2>
+        <p>The step-by-step process</p>
+      </div>
+
+      <div class="update-flow">
+        <div class="flow-step active" id="flow-step-1">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h4>Component Returns JSX</h4>
+            <p>Your component function runs and returns what the UI should look like</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step" id="flow-step-2">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h4>JSX → Virtual DOM</h4>
+            <p>JSX becomes JavaScript objects (the Virtual DOM tree)</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step" id="flow-step-3">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h4>Compare: Old vs New</h4>
+            <p>React compares the old Virtual DOM with the new one (diffing)</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step" id="flow-step-4">
+          <div class="flow-number">4</div>
+          <div class="flow-content">
+            <h4>Update Only Changes</h4>
+            <p>React updates only the changed parts in the real DOM</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="teaching-line">
+        <span class="emoji">🧩</span>
+        Reconciliation + Virtual DOM = "Spot the difference" game for UI
+      </div>
+
+      <!-- Reconciliation Demo -->
+      <div class="reconciliation-demo" style="margin-top: 60px;">
+        <div class="recon-header">
+          <h4>🎮 Interactive: Watch Reconciliation</h4>
+          <div class="recon-controls">
+            <button class="recon-btn" onclick="resetRecon()">Reset</button>
+            <button class="recon-btn primary" onclick="runRecon()">Change "Hello" → "Hi"</button>
+          </div>
+        </div>
+        <div class="recon-body">
+          <div class="recon-visual">
+            <div class="dom-tree" id="old-vdom">
+              <div class="dom-tree-header">
+                <h5>Old Virtual DOM</h5>
+                <span>Before change</span>
+              </div>
+              <div class="tree-node">&lt;div&gt;</div>
+              <div class="tree-children">
+                <div class="tree-node" id="old-h1">&lt;h1&gt;Hello&lt;/h1&gt;</div>
+                <div class="tree-node">&lt;p&gt;Welcome&lt;/p&gt;</div>
+              </div>
+            </div>
+
+            <div class="recon-arrow">
+              <span class="arrow">→</span>
+              <span>Compare</span>
+            </div>
+
+            <div class="dom-tree" id="new-vdom">
+              <div class="dom-tree-header">
+                <h5>New Virtual DOM</h5>
+                <span>After change</span>
+              </div>
+              <div class="tree-node">&lt;div&gt;</div>
+              <div class="tree-children">
+                <div class="tree-node" id="new-h1">&lt;h1&gt;Hello&lt;/h1&gt;</div>
+                <div class="tree-node">&lt;p&gt;Welcome&lt;/p&gt;</div>
+              </div>
+            </div>
+
+            <div class="recon-arrow">
+              <span class="arrow">→</span>
+              <span>Patch</span>
+            </div>
+
+            <div class="dom-tree" id="real-dom">
+              <div class="dom-tree-header">
+                <h5>Real DOM</h5>
+                <span>What user sees</span>
+              </div>
+              <div class="tree-node">&lt;div&gt;</div>
+              <div class="tree-children">
+                <div class="tree-node" id="real-h1">&lt;h1&gt;Hello&lt;/h1&gt;</div>
+                <div class="tree-node">&lt;p&gt;Welcome&lt;/p&gt;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Virtual DOM Deep Dive -->
+  <section id="virtual-dom">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">5️⃣ Deep Dive</div>
+        <h2>Virtual DOM Deep Dive</h2>
+        <p>Understanding the secret sauce</p>
+      </div>
+
+      <!-- Problem -->
+      <div class="problem-box">
+        <h3>⚠️ The Problem Virtual DOM Solves</h3>
+        <p>Real DOM manipulation is slow! Every time you touch the DOM, the browser may:</p>
+        <div class="problem-list">
+          <div class="problem-item">
+            <span class="icon">📐</span>
+            <span>Recalculate layout (reflow)</span>
+          </div>
+          <div class="problem-item">
+            <span class="icon">🎨</span>
+            <span>Repaint pixels</span>
+          </div>
+          <div class="problem-item">
+            <span class="icon">📏</span>
+            <span>Reposition elements</span>
+          </div>
+          <div class="problem-item">
+            <span class="icon">💥</span>
+            <span>Updating many times → performance pain</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- What is Virtual DOM -->
+      <div class="vdom-explanation">
+        <h3>What is Virtual DOM?</h3>
+        
+        <div class="vdom-what">
+          <div class="vdom-is">
+            <h4>✅ It IS:</h4>
+            <div class="vdom-list">
+              <div class="vdom-list-item">
+                <span>✓</span>
+                <span>A lightweight JS copy of real DOM</span>
+              </div>
+              <div class="vdom-list-item">
+                <span>✓</span>
+                <span>Plain JavaScript objects</span>
+              </div>
+              <div class="vdom-list-item">
+                <span>✓</span>
+                <span>A UI blueprint 📝</span>
+              </div>
+            </div>
+          </div>
+          <div class="vdom-isnt">
+            <h4>❌ It is NOT:</h4>
+            <div class="vdom-list">
+              <div class="vdom-list-item">
+                <span>✗</span>
+                <span>Real HTML</span>
+              </div>
+              <div class="vdom-list-item">
+                <span>✗</span>
+                <span>Shown on screen</span>
+              </div>
+              <div class="vdom-list-item">
+                <span>✗</span>
+                <span>The actual building</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vdom-code-example">
+          <h5>Virtual DOM is just JavaScript objects:</h5>
+          <pre><code>{
+  <span class="code-attr">type</span>: <span class="code-string">"h1"</span>,
+  <span class="code-attr">props</span>: { 
+    <span class="code-attr">children</span>: <span class="code-string">"Hello"</span> 
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Speed Comparison -->
+      <div class="speed-comparison">
+        <h3>💨 Why is this Fast?</h3>
+        
+        <div class="speed-bars">
+          <div class="speed-bar-item">
+            <div class="speed-label">DOM Operations</div>
+            <div class="speed-bar-track">
+              <div class="speed-bar-fill slow" id="dom-bar" style="width: 90%;">Expensive 💸</div>
+            </div>
+          </div>
+          <div class="speed-bar-item">
+            <div class="speed-label">JS Object Compare</div>
+            <div class="speed-bar-track">
+              <div class="speed-bar-fill fast" id="js-bar" style="width: 20%;">Cheap 🪙</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="speed-legend">
+          <div class="speed-legend-item">
+            <div class="speed-legend-dot slow"></div>
+            <span>Slow (touching real DOM)</span>
+          </div>
+          <div class="speed-legend-item">
+            <div class="speed-legend-dot fast"></div>
+            <span>Fast (JavaScript only)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow Comparison -->
+      <div class="flow-diagram">
+        <h3>Old Flow vs React Flow</h3>
+        
+        <div class="flow-comparison">
+          <div class="flow-column old">
+            <h4>❌ Without Virtual DOM</h4>
+            <div class="flow-items">
+              <div class="flow-item">DOM update</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item">DOM update</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item">DOM update</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item">DOM update</div>
+            </div>
+          </div>
+          
+          <div class="flow-column react">
+            <h4>✅ With Virtual DOM</h4>
+            <div class="flow-items">
+              <div class="flow-item">JS update</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item">JS update</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item">Compare (diff)</div>
+              <span class="flow-arrow-down">↓</span>
+              <div class="flow-item highlight">ONE DOM update</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSX Transformation -->
+      <div class="jsx-transform">
+        <div class="jsx-header">
+          <h4>🔄 JSX → Virtual DOM Transformation</h4>
+        </div>
+        <div class="jsx-body">
+          <div class="jsx-step">
+            <div class="jsx-step-header">JSX (what you write)</div>
+            <div class="jsx-step-code">
+              <pre><code><span class="code-tag">&lt;h1&gt;</span>{<span class="code-variable">count</span>}<span class="code-tag">&lt;/h1&gt;</span></code></pre>
+            </div>
+          </div>
+          
+          <div class="jsx-arrow">→</div>
+          
+          <div class="jsx-step">
+            <div class="jsx-step-header">Becomes</div>
+            <div class="jsx-step-code">
+              <pre><code><span class="code-variable">React</span>.<span class="code-function">createElement</span>(
+  <span class="code-string">"h1"</span>,
+  <span class="code-keyword">null</span>,
+  <span class="code-variable">count</span>
+)</code></pre>
+            </div>
+          </div>
+          
+          <div class="jsx-arrow">→</div>
+          
+          <div class="jsx-step">
+            <div class="jsx-step-header">Virtual DOM Node</div>
+            <div class="jsx-step-code">
+              <pre><code>{
+  <span class="code-attr">type</span>: <span class="code-string">"h1"</span>,
+  <span class="code-attr">props</span>: {
+    <span class="code-attr">children</span>: <span class="code-number">5</span>
+  }
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clarifications -->
+      <div class="clarifications">
+        <div class="clarification-card">
+          <h4>❓ Does React recreate the whole DOM?</h4>
+          <p>No! React only recreates the Virtual DOM (cheap JavaScript objects). The real DOM is only updated where changes occurred.</p>
+        </div>
+        <div class="clarification-card">
+          <h4>❓ Is Virtual DOM unique to React?</h4>
+          <p>No! Vue and Preact use it too. Svelte takes a different approach (compile-time optimization).</p>
+        </div>
+        <div class="clarification-card">
+          <h4>❓ Is Virtual DOM always faster?</h4>
+          <p>Not always! For simple UIs, direct DOM might be faster. Virtual DOM shines with complex UIs and frequent updates.</p>
+        </div>
+        <div class="clarification-card">
+          <h4>🌟 When does Virtual DOM shine?</h4>
+          <p>Lots of components, frequent state changes, big UI trees — this is where Virtual DOM really helps!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Final Flow -->
+  <section id="final-flow">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">6️⃣ Summary</div>
+        <h2>The Complete Picture</h2>
+        <p>This is what React does behind the scenes</p>
+      </div>
+
+      <div class="final-flow-diagram">
+        <div class="final-flow-steps">
+          <div class="final-step" onclick="highlightStep(this)">
+            <div class="final-step-icon">🔄</div>
+            <div class="final-step-content">
+              <h5>State Changes</h5>
+              <p>You call setState or update a state variable</p>
+            </div>
+          </div>
+          <div class="final-arrow">↓</div>
+          <div class="final-step" onclick="highlightStep(this)">
+            <div class="final-step-icon">🔁</div>
+            <div class="final-step-content">
+              <h5>Component Re-runs</h5>
+              <p>React calls your component function again</p>
+            </div>
+          </div>
+          <div class="final-arrow">↓</div>
+          <div class="final-step" onclick="highlightStep(this)">
+            <div class="final-step-icon">🌳</div>
+            <div class="final-step-content">
+              <h5>New Virtual DOM</h5>
+              <p>Creates a new Virtual DOM tree from JSX</p>
+            </div>
+          </div>
+          <div class="final-arrow">↓</div>
+          <div class="final-step" onclick="highlightStep(this)">
+            <div class="final-step-icon">🔍</div>
+            <div class="final-step-content">
+              <h5>Compare with Old</h5>
+              <p>Diffs old Virtual DOM vs new Virtual DOM</p>
+            </div>
+          </div>
+          <div class="final-arrow">↓</div>
+          <div class="final-step" onclick="highlightStep(this)">
+            <div class="final-step-icon">✨</div>
+            <div class="final-step-content">
+              <h5>Update Real DOM</h5>
+              <p>Only touches the parts that actually changed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="teaching-line" style="margin-top: 40px;">
+        <span class="emoji">🔑</span>
+        React never updates the DOM directly from your code — it updates Virtual DOM first, then decides how to touch the real DOM
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Footer -->
+  <div class="nav-footer">
+    <div class="nav-footer-content">
+      <a href="components-props.html" class="nav-footer-link">
+        <span>←</span>
+        <div>
+          <span>Previous Module</span>
+          <strong>Components & Props</strong>
+        </div>
+      </a>
+      <a href="ssr-csr.html" class="nav-footer-link next">
+        <span>→</span>
+        <div>
+          <span>Next Module</span>
+          <strong>SSR vs CSR</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Built for learning Next.js • <a href="https://react.dev" target="_blank">React Docs</a></p>
+  </footer>
+
+  <script>
+    // Todo List Demo - Old Way
+    let oldTodoAdded = false;
+    function addTodoOld() {
+      if (oldTodoAdded) return;
+      oldTodoAdded = true;
+      
+      const list = document.getElementById('old-todo-list');
+      const btn = document.querySelector('.old-btn');
+      btn.disabled = true;
+      
+      // Animate operations one by one
+      const ops = ['old-op-1', 'old-op-2', 'old-op-3', 'old-op-4', 'old-op-5'];
+      
+      // Step 1: Get container
+      document.getElementById('old-op-1').classList.add('active');
+      
+      setTimeout(() => {
+        // Step 2: Clear innerHTML - flash all existing items
+        document.getElementById('old-op-2').classList.add('active');
+        list.querySelectorAll('.todo-item').forEach(item => {
+          item.classList.add('flash');
+        });
+      }, 400);
+      
+      setTimeout(() => {
+        // Step 3: Rebuild entire list
+        document.getElementById('old-op-3').classList.add('active');
+      }, 800);
+      
+      setTimeout(() => {
+        // Step 4: Rerender all items
+        document.getElementById('old-op-4').classList.add('active');
+        list.querySelectorAll('.todo-item').forEach(item => {
+          item.classList.remove('flash');
+          item.classList.add('flash');
+        });
+        // Add new item
+        const newItem = document.createElement('div');
+        newItem.className = 'todo-item new';
+        newItem.textContent = '✓ Learn React';
+        list.appendChild(newItem);
+      }, 1200);
+      
+      setTimeout(() => {
+        // Step 5: Browser repaints
+        document.getElementById('old-op-5').classList.add('active');
+      }, 1600);
+    }
+
+    // Todo List Demo - React Way
+    let reactTodoAdded = false;
+    function addTodoReact() {
+      if (reactTodoAdded) return;
+      reactTodoAdded = true;
+      
+      const list = document.getElementById('react-todo-list');
+      const btn = document.querySelector('.react-btn');
+      btn.disabled = true;
+      
+      // Animate operations
+      // Step 1: setTodos
+      document.getElementById('react-op-1').classList.add('active');
+      
+      setTimeout(() => {
+        // Step 2: Create Virtual DOM
+        document.getElementById('react-op-2').classList.add('active');
+      }, 400);
+      
+      setTimeout(() => {
+        // Step 3: Diff
+        document.getElementById('react-op-3').classList.add('active');
+      }, 800);
+      
+      setTimeout(() => {
+        // Step 4: Append ONLY new item
+        document.getElementById('react-op-4').classList.add('active');
+        const newItem = document.createElement('div');
+        newItem.className = 'todo-item new';
+        newItem.textContent = '✓ Learn React';
+        list.appendChild(newItem);
+      }, 1200);
+      
+      setTimeout(() => {
+        // Step 5: Other items untouched
+        document.getElementById('react-op-5').classList.add('active');
+      }, 1600);
+    }
+
+    // Reconciliation demo
+    function runRecon() {
+      // Update new VDOM
+      document.getElementById('new-h1').textContent = '<h1>Hi</h1>';
+      document.getElementById('new-h1').classList.add('changed');
+      
+      // After a delay, update old VDOM styling
+      setTimeout(() => {
+        document.getElementById('old-h1').classList.add('unchanged');
+        document.querySelectorAll('#old-vdom .tree-node:not(#old-h1)').forEach(el => {
+          el.classList.add('unchanged');
+        });
+      }, 500);
+      
+      // After another delay, update real DOM
+      setTimeout(() => {
+        document.getElementById('real-h1').textContent = '<h1>Hi</h1>';
+        document.getElementById('real-h1').classList.add('changed');
+      }, 1000);
+    }
+
+    function resetRecon() {
+      document.getElementById('new-h1').textContent = '<h1>Hello</h1>';
+      document.getElementById('real-h1').textContent = '<h1>Hello</h1>';
+      
+      document.querySelectorAll('.tree-node').forEach(el => {
+        el.classList.remove('changed', 'unchanged');
+      });
+    }
+
+    // Flow step animation
+    let currentFlowStep = 1;
+    function animateFlowSteps() {
+      setInterval(() => {
+        document.querySelectorAll('.flow-step').forEach(el => el.classList.remove('active'));
+        document.getElementById(`flow-step-${currentFlowStep}`).classList.add('active');
+        currentFlowStep = currentFlowStep >= 4 ? 1 : currentFlowStep + 1;
+      }, 2000);
+    }
+    animateFlowSteps();
+
+    // Highlight step on click
+    function highlightStep(el) {
+      document.querySelectorAll('.final-step').forEach(step => step.classList.remove('active'));
+      el.classList.add('active');
+    }
+  </script>
+</body>
+</html>

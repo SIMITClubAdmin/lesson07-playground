@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSR vs CSR in Next.js - Interactive Learning</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-elevated: #1a1a25;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #555566;
+      --accent-ssr: #00d4aa;
+      --accent-ssr-glow: rgba(0, 212, 170, 0.3);
+      --accent-csr: #ff6b9d;
+      --accent-csr-glow: rgba(255, 107, 157, 0.3);
+      --accent-blue: #4d9fff;
+      --border-color: #2a2a3a;
+      --gradient-ssr: linear-gradient(135deg, #00d4aa 0%, #00a886 100%);
+      --gradient-csr: linear-gradient(135deg, #ff6b9d 0%, #ff4777 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 20px 40px;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    nav .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, var(--accent-ssr), var(--accent-csr));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding-top: 80px;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-ssr-glow) 0%, transparent 70%);
+      top: -200px;
+      left: -200px;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-csr-glow) 0%, transparent 70%);
+      bottom: -100px;
+      right: -100px;
+      animation: float 15s infinite ease-in-out reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(50px, 30px); }
+    }
+
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: 4.5rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      letter-spacing: -2px;
+    }
+
+    .hero h1 .ssr {
+      color: var(--accent-ssr);
+    }
+
+    .hero h1 .csr {
+      color: var(--accent-csr);
+    }
+
+    .hero p {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .btn-ssr {
+      background: var(--gradient-ssr);
+      color: #000;
+    }
+
+    .btn-csr {
+      background: var(--gradient-csr);
+      color: #fff;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Section Styles */
+    section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .section-header h2 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Flow Animation Section */
+    #flow-animation {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 50%, var(--bg-dark) 100%);
+    }
+
+    .flow-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .flow-tab {
+      padding: 14px 40px;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-color);
+      border-radius: 100px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+    }
+
+    .flow-tab.active-ssr {
+      background: var(--accent-ssr);
+      border-color: var(--accent-ssr);
+      color: #000;
+    }
+
+    .flow-tab.active-csr {
+      background: var(--accent-csr);
+      border-color: var(--accent-csr);
+      color: #fff;
+    }
+
+    .flow-container {
+      display: flex;
+      justify-content: center;
+      gap: 100px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .flow-stage {
+      text-align: center;
+      position: relative;
+    }
+
+    .flow-stage::after {
+      content: '→';
+      position: absolute;
+      right: -65px;
+      top: 60px;
+      font-size: 2rem;
+      color: var(--text-muted);
+    }
+
+    .flow-stage:last-child::after {
+      display: none;
+    }
+
+    .stage-icon {
+      width: 120px;
+      height: 120px;
+      background: var(--bg-elevated);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      border: 2px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-icon svg {
+      width: 50px;
+      height: 50px;
+      stroke: var(--text-secondary);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .flow-stage h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .flow-stage p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      max-width: 150px;
+    }
+
+    /* Progress Indicator */
+    .progress-bar-container {
+      margin: 60px auto 40px;
+      max-width: 900px;
+      position: relative;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 4px;
+      transition: width 0.3s linear;
+    }
+
+    .progress-fill.ssr {
+      background: var(--gradient-ssr);
+    }
+
+    .progress-fill.csr {
+      background: var(--gradient-csr);
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .animation-controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .control-btn {
+      padding: 12px 28px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .control-btn:hover {
+      background: var(--bg-card);
+      border-color: var(--text-muted);
+    }
+
+    /* Timeline Visual */
+    .timeline-visual {
+      margin: 60px auto 0;
+      max-width: 1000px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .timeline-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-label {
+      width: 120px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .timeline-bar-track {
+      flex: 1;
+      height: 40px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timeline-bar {
+      height: 100%;
+      border-radius: 8px;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #000;
+      opacity: 0;
+      transition: all 0.5s ease-out;
+    }
+
+    .timeline-bar.ssr-bar {
+      background: var(--gradient-ssr);
+    }
+
+    .timeline-bar.csr-bar {
+      background: var(--gradient-csr);
+    }
+
+    .timeline-bar.html-bar {
+      background: linear-gradient(135deg, #4d9fff 0%, #2d7fdf 100%);
+      color: #fff;
+    }
+
+    /* Component Examples Section */
+    #components {
+      background: var(--bg-dark);
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+
+    .component-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s;
+    }
+
+    .component-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .component-header {
+      padding: 24px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .component-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .component-badge {
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-ssr {
+      background: rgba(0, 212, 170, 0.15);
+      color: var(--accent-ssr);
+    }
+
+    .badge-csr {
+      background: rgba(255, 107, 157, 0.15);
+      color: var(--accent-csr);
+    }
+
+    .component-preview {
+      padding: 30px;
+      min-height: 200px;
+      background: var(--bg-elevated);
+      position: relative;
+    }
+
+    .component-info {
+      padding: 24px 30px;
+    }
+
+    .component-info h4 {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .component-info p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* Loading States */
+    .loading-skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Preview Components */
+    .preview-hero {
+      text-align: center;
+    }
+
+    .preview-hero h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .preview-hero p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .preview-hero.loading h2,
+    .preview-hero.loading p {
+      color: transparent;
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    .preview-counter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .counter-display {
+      font-size: 4rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .counter-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .counter-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .counter-btn.minus {
+      background: var(--bg-card);
+      color: var(--accent-csr);
+      border: 2px solid var(--accent-csr);
+    }
+
+    .counter-btn.plus {
+      background: var(--accent-csr);
+      color: #fff;
+    }
+
+    .counter-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .preview-modal-trigger {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .modal-btn {
+      padding: 14px 28px;
+      background: var(--gradient-csr);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .modal-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 400px;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-content h3 {
+      margin-bottom: 12px;
+    }
+
+    .modal-content p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .modal-close {
+      padding: 12px 24px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Form Preview */
+    .preview-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-csr);
+      box-shadow: 0 0 0 3px var(--accent-csr-glow);
+    }
+
+    .submit-btn {
+      padding: 14px;
+      background: var(--gradient-csr);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Blog Cards */
+    .preview-blog {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .blog-card {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-card);
+      border-radius: 12px;
+    }
+
+    .blog-thumb {
+      width: 60px;
+      height: 60px;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .blog-content h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .blog-content p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Data Table */
+    .preview-table {
+      width: 100%;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-table td {
+      font-size: 0.9rem;
+    }
+
+    /* Loading Indicator */
+    .loading-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-csr);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Comparison Section */
+    #comparison {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-card) 100%);
+    }
+
+    .comparison-table {
+      background: var(--bg-card);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .comparison-row:last-child {
+      border-bottom: none;
+    }
+
+    .comparison-cell {
+      padding: 24px 30px;
+    }
+
+    .comparison-header {
+      background: var(--bg-elevated);
+    }
+
+    .comparison-header .comparison-cell:first-child {
+      color: var(--text-muted);
+    }
+
+    .comparison-header .comparison-cell:nth-child(2) {
+      color: var(--accent-ssr);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .comparison-header .comparison-cell:nth-child(3) {
+      color: var(--accent-csr);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .comparison-cell:first-child {
+      font-weight: 500;
+    }
+
+    .comparison-cell:not(:first-child) {
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .check-icon {
+      color: var(--accent-ssr);
+    }
+
+    .cross-icon {
+      color: var(--accent-csr);
+    }
+
+    /* Footer */
+    footer {
+      padding: 60px 0;
+      text-align: center;
+      border-top: 1px solid var(--border-color);
+    }
+
+    footer p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Navigation Footer */
+    .nav-footer {
+      background: var(--bg-card);
+      padding: 40px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .nav-footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-footer-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      padding: 16px 24px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+
+    .nav-footer-link:hover {
+      background: var(--bg-dark);
+    }
+
+    .nav-footer-link.next {
+      flex-direction: row-reverse;
+    }
+
+    .nav-footer-link span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .nav-footer-link strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .components-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-container {
+        gap: 60px;
+      }
+
+      .flow-stage::after {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .section-header h2 {
+        font-size: 2rem;
+      }
+
+      .container {
+        padding: 0 20px;
+      }
+
+      .comparison-row {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-cell {
+        text-align: left !important;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .comparison-row:last-child .comparison-cell:last-child {
+        border-bottom: none;
+      }
+    }
+
+    /* Render Simulation */
+    .render-simulation {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .sim-panel {
+      background: var(--bg-card);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .sim-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sim-header h4 {
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .sim-dot.ssr {
+      background: var(--accent-ssr);
+    }
+
+    .sim-dot.csr {
+      background: var(--accent-csr);
+    }
+
+    .sim-status {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sim-content {
+      padding: 24px;
+      min-height: 250px;
+      position: relative;
+    }
+
+    .sim-browser {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sim-browser-bar {
+      padding: 12px 16px;
+      background: var(--bg-dark);
+      display: flex;
+      gap: 8px;
+    }
+
+    .sim-browser-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+    }
+
+    .sim-browser-content {
+      padding: 20px;
+      min-height: 150px;
+    }
+
+    .sim-skeleton {
+      height: 16px;
+      background: var(--bg-card);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .sim-skeleton.title {
+      width: 60%;
+      height: 24px;
+    }
+
+    .sim-skeleton.short {
+      width: 40%;
+    }
+
+    .hydration-overlay {
+      position: absolute;
+      inset: 24px;
+      background: rgba(255, 107, 157, 0.1);
+      border: 2px dashed var(--accent-csr);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .hydration-overlay.active {
+      opacity: 1;
+    }
+
+    .hydration-text {
+      background: var(--accent-csr);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Loading Demo Section */
+    .loading-demo-section {
+      margin-top: 80px;
+      padding: 60px;
+      background: var(--bg-card);
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .loading-demo-section h3 {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .demo-controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .demo-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .demo-panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .demo-panel {
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .demo-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--bg-dark);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .demo-timer {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .demo-browser {
+      background: var(--bg-card);
+      margin: 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .demo-browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .demo-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .demo-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+    }
+
+    .demo-url {
+      flex: 1;
+      background: var(--bg-elevated);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .demo-viewport {
+      min-height: 220px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .demo-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 180px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .demo-status {
+      padding: 12px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .demo-legend {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* Demo Loading States */
+    .demo-skeleton-block {
+      background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-dark) 50%, var(--bg-elevated) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .demo-skeleton-block.title {
+      height: 28px;
+      width: 70%;
+    }
+
+    .demo-skeleton-block.text {
+      height: 14px;
+      width: 100%;
+    }
+
+    .demo-skeleton-block.text-short {
+      height: 14px;
+      width: 60%;
+    }
+
+    .demo-skeleton-block.card {
+      height: 60px;
+      width: 100%;
+    }
+
+    .demo-spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 180px;
+      gap: 16px;
+    }
+
+    .demo-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent-csr);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .demo-spinner-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .demo-content {
+      text-align: left;
+    }
+
+    .demo-content h4 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .demo-content p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .demo-card {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .demo-card-img {
+      width: 50px;
+      height: 50px;
+      background: var(--bg-dark);
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .demo-card-text h5 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .demo-card-text span {
+      font-size: 0.8rem;
+      color: var(--accent-ssr);
+      font-weight: 600;
+    }
+
+    .demo-hydrating {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 107, 157, 0.08);
+      border: 2px dashed var(--accent-csr);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .demo-hydrating.active {
+      opacity: 1;
+    }
+
+    .demo-hydrating span {
+      background: var(--accent-csr);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Hybrid Section Styles */
+    #hybrid {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, #0d1117 50%, var(--bg-dark) 100%);
+    }
+
+    .hybrid-intro {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+    }
+
+    .hybrid-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(255, 107, 157, 0.15));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .badge-icon {
+      font-size: 1.2rem;
+    }
+
+    .hybrid-intro p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+
+    /* Page Demo */
+    .page-demo-container {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 60px;
+    }
+
+    .page-demo-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .page-demo-header h3 {
+      margin-bottom: 8px;
+    }
+
+    .page-demo-header p {
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .demo-toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .toggle-btn {
+      padding: 6px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .page-demo {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 1100px) {
+      .page-demo {
+        flex-direction: column;
+      }
+    }
+
+    .page-demo-browser {
+      flex: 1;
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .page-demo-content {
+      padding: 0;
+    }
+
+    .page-section {
+      position: relative;
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .page-section:last-child {
+      border-bottom: none;
+    }
+
+    .page-section:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .page-section.ssr-section:hover {
+      box-shadow: inset 0 0 0 2px var(--accent-ssr);
+    }
+
+    .page-section.csr-section:hover {
+      box-shadow: inset 0 0 0 2px var(--accent-csr);
+    }
+
+    .page-section.mixed-section:hover {
+      box-shadow: inset 0 0 0 2px var(--accent-blue);
+    }
+
+    .section-label {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      opacity: 1;
+      transition: opacity 0.3s;
+    }
+
+    .section-label.hidden {
+      opacity: 0;
+    }
+
+    .ssr-label {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-ssr);
+    }
+
+    .csr-label {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-csr);
+    }
+
+    .mixed-label {
+      background: rgba(77, 159, 255, 0.2);
+      color: var(--accent-blue);
+    }
+
+    .section-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: 10px;
+      width: 250px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+      z-index: 100;
+      text-align: center;
+    }
+
+    .page-section:hover .section-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-5px);
+    }
+
+    .section-tooltip strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .section-tooltip p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* Demo page elements */
+    .demo-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .demo-logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .demo-nav-links {
+      display: flex;
+      gap: 20px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .demo-nav-icons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-icon {
+      font-size: 1rem;
+    }
+
+    .demo-hero-section {
+      text-align: center;
+      padding: 30px 0;
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(77, 159, 255, 0.1));
+      border-radius: 12px;
+    }
+
+    .demo-hero-section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+
+    .demo-hero-section p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .demo-cta {
+      background: var(--gradient-ssr);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .demo-search-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-search-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .demo-filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .demo-filter {
+      padding: 6px 14px;
+      background: var(--bg-card);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .demo-filter.active {
+      background: var(--accent-csr);
+      color: #fff;
+    }
+
+    .demo-product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .demo-product-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .demo-product {
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .demo-product-img {
+      width: 100%;
+      height: 80px;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .demo-product h4 {
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .demo-price {
+      color: var(--accent-ssr);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .demo-add-btn {
+      width: 100%;
+      padding: 8px;
+      background: var(--accent-csr);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+    }
+
+    .demo-add-btn::before {
+      content: 'CSR';
+      position: absolute;
+      top: -20px;
+      right: 0;
+      font-size: 0.6rem;
+      background: rgba(255, 107, 157, 0.3);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--accent-csr);
+    }
+
+    .demo-newsletter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .newsletter-text h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .newsletter-text p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .newsletter-form input {
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .newsletter-form button {
+      padding: 10px 18px;
+      background: var(--accent-blue);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Legend Cards */
+    .page-demo-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 280px;
+    }
+
+    .legend-card {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .legend-card.ssr {
+      border-left: 3px solid var(--accent-ssr);
+    }
+
+    .legend-card.csr {
+      border-left: 3px solid var(--accent-csr);
+    }
+
+    .legend-card.mixed {
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.ssr {
+      background: var(--accent-ssr);
+    }
+
+    .legend-dot.csr {
+      background: var(--accent-csr);
+    }
+
+    .legend-dot.mixed {
+      background: var(--accent-blue);
+    }
+
+    .legend-card ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-card li {
+      padding: 4px 0;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .legend-card li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    /* Code Example */
+    .code-example-container {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    .code-example-container h3 {
+      margin-bottom: 8px;
+    }
+
+    .code-example-container code {
+      background: var(--bg-elevated);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--accent-csr);
+    }
+
+    .code-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 40px;
+      text-align: left;
+    }
+
+    @media (max-width: 900px) {
+      .code-panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .code-panel {
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-dot.ssr {
+      background: var(--accent-ssr);
+    }
+
+    .code-dot.csr {
+      background: var(--accent-csr);
+    }
+
+    .code-badge {
+      margin-left: auto;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .code-badge.ssr {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-ssr);
+    }
+
+    .code-badge.csr {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-csr);
+    }
+
+    .code-block {
+      padding: 20px;
+      margin: 0;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+
+    .code-keyword {
+      color: var(--accent-csr);
+    }
+
+    .code-string {
+      color: var(--accent-ssr);
+    }
+
+    .code-function {
+      color: var(--accent-blue);
+    }
+
+    .code-comment {
+      color: var(--text-muted);
+    }
+
+    .code-tag {
+      color: #e06c75;
+    }
+
+    .code-attr {
+      color: #d19a66;
+    }
+
+    /* Key Principles */
+    .key-principles h4 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 1.2rem;
+    }
+
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .principles-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .principles-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .principle-card {
+      background: var(--bg-elevated);
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .principle-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .principle-card h5 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .principle-card p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Decision Flowchart */
+    .decision-flowchart {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 40px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .decision-flowchart h3 {
+      margin-bottom: 8px;
+    }
+
+    .flowchart {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .flow-question {
+      background: var(--bg-elevated);
+      padding: 20px 30px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .flow-q-icon {
+      font-size: 1.2rem;
+    }
+
+    .flow-branches {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+    }
+
+    @media (max-width: 600px) {
+      .flow-branches {
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+      }
+    }
+
+    .flow-branch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .flow-answer {
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .flow-branch.no .flow-answer {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--accent-ssr);
+    }
+
+    .flow-branch.yes .flow-answer {
+      background: rgba(255, 107, 157, 0.2);
+      color: var(--accent-csr);
+    }
+
+    .flow-arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    .flow-result {
+      padding: 16px 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .flow-result.ssr {
+      background: var(--accent-ssr);
+      color: #000;
+    }
+
+    .flow-result.csr {
+      background: var(--accent-csr);
+      color: #fff;
+    }
+
+    .flow-result.small {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+    }
+
+    .result-icon {
+      font-size: 1.2rem;
+    }
+
+    .flow-examples {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      max-width: 200px;
+    }
+
+    .flow-sub-question {
+      background: var(--bg-elevated);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .flow-sub-branches {
+      display: flex;
+      gap: 20px;
+    }
+
+    .flow-sub-branch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-answer {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-content">
+      <div class="nav-left">
+        <a href="index.html" class="back-btn">← Back</a>
+        <div class="logo">SSR vs CSR</div>
+      </div>
+      <div class="nav-links">
+        <a href="#flow-animation">Flow Animation</a>
+        <a href="#components">Components</a>
+        <a href="#hybrid">Hybrid Approach</a>
+        <a href="#comparison">Comparison</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Learn <span class="ssr">SSR</span> vs <span class="csr">CSR</span></h1>
+      <p>Master Next.js rendering strategies with interactive animations and real component examples</p>
+      <div class="hero-buttons">
+        <button class="btn btn-ssr" onclick="scrollToSection('flow-animation')">See How It Works</button>
+        <button class="btn btn-csr" onclick="scrollToSection('components')">View Components</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flow Animation Section -->
+  <section id="flow-animation">
+    <div class="container">
+      <div class="section-header">
+        <h2>How Rendering Works</h2>
+        <p>Watch the data flow from request to render for each rendering method</p>
+      </div>
+
+      <div class="flow-tabs">
+        <button class="flow-tab active-ssr" id="tab-ssr" onclick="switchFlow('ssr')">Server-Side Rendering</button>
+        <button class="flow-tab" id="tab-csr" onclick="switchFlow('csr')">Client-Side Rendering</button>
+      </div>
+
+      <!-- SSR Flow -->
+      <div id="flow-ssr" class="flow-content">
+        <div class="flow-container">
+          <div class="flow-stage" data-step="1">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Browser Request</h3>
+            <p>User navigates to page</p>
+          </div>
+          <div class="flow-stage" data-step="2">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            </div>
+            <h3>Server Processing</h3>
+            <p>Data fetched & HTML generated</p>
+          </div>
+          <div class="flow-stage" data-step="3">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v12H4z"/><path d="M9 20h6m-3-4v4"/><path d="M7 8h10M7 12h6"/></svg>
+            </div>
+            <h3>Full HTML Sent</h3>
+            <p>Complete page delivered</p>
+          </div>
+          <div class="flow-stage" data-step="4">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3>Hydration</h3>
+            <p>JS attaches for interactivity</p>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-track">
+            <div class="progress-fill ssr" id="progress-ssr"></div>
+          </div>
+          <div class="progress-labels">
+            <span>Request</span>
+            <span>Server Processing</span>
+            <span>HTML Transfer</span>
+            <span>Hydration</span>
+            <span>Interactive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSR Flow -->
+      <div id="flow-csr" class="flow-content" style="display: none;">
+        <div class="flow-container">
+          <div class="flow-stage" data-step="1">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Browser Request</h3>
+            <p>User navigates to page</p>
+          </div>
+          <div class="flow-stage" data-step="2">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v12H4z"/><path d="M9 8h6M9 12h3"/></svg>
+            </div>
+            <h3>Empty Shell Sent</h3>
+            <p>Minimal HTML + JS bundle</p>
+          </div>
+          <div class="flow-stage" data-step="3">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+            </div>
+            <h3>JS Execution</h3>
+            <p>React renders components</p>
+          </div>
+          <div class="flow-stage" data-step="4">
+            <div class="stage-icon">
+              <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h3>Data Fetching</h3>
+            <p>API calls from browser</p>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-track">
+            <div class="progress-fill csr" id="progress-csr"></div>
+          </div>
+          <div class="progress-labels">
+            <span>Request</span>
+            <span>Empty Shell</span>
+            <span>JS Parse/Execute</span>
+            <span>Data Fetch</span>
+            <span>Interactive</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="animation-controls">
+        <button class="control-btn" onclick="playAnimation()">▶ Play Animation</button>
+        <button class="control-btn" onclick="resetAnimation()">↺ Reset</button>
+      </div>
+
+      <!-- Timeline Comparison -->
+      <div class="timeline-visual">
+        <h3 style="margin-bottom: 30px; text-align: center;">Time to First Content</h3>
+        <div class="timeline-row">
+          <div class="timeline-label">SSR</div>
+          <div class="timeline-bar-track">
+            <div class="timeline-bar ssr-bar" id="ssr-server" style="left: 0; width: 40%;">Server Render</div>
+            <div class="timeline-bar html-bar" id="ssr-transfer" style="left: 40%; width: 20%;">Transfer</div>
+            <div class="timeline-bar csr-bar" id="ssr-hydrate" style="left: 60%; width: 20%;">Hydrate</div>
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-label">CSR</div>
+          <div class="timeline-bar-track">
+            <div class="timeline-bar html-bar" id="csr-shell" style="left: 0; width: 10%;">Shell</div>
+            <div class="timeline-bar csr-bar" id="csr-js" style="left: 10%; width: 35%;">JS Parse + Execute</div>
+            <div class="timeline-bar ssr-bar" id="csr-data" style="left: 45%; width: 35%;">Fetch Data</div>
+          </div>
+        </div>
+        <p style="text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 0.85rem;">
+          SSR shows content faster, but CSR has faster subsequent navigations
+        </p>
+      </div>
+
+      <!-- Real-time Simulation -->
+      <div class="render-simulation">
+        <div class="sim-panel">
+          <div class="sim-header">
+            <h4><span class="sim-dot ssr"></span> SSR Simulation</h4>
+            <span class="sim-status" id="ssr-sim-status">Waiting...</span>
+          </div>
+          <div class="sim-content">
+            <div class="sim-browser">
+              <div class="sim-browser-bar">
+                <div class="sim-browser-dot"></div>
+                <div class="sim-browser-dot"></div>
+                <div class="sim-browser-dot"></div>
+              </div>
+              <div class="sim-browser-content" id="ssr-browser-content">
+                <div class="sim-skeleton title"></div>
+                <div class="sim-skeleton"></div>
+                <div class="sim-skeleton short"></div>
+              </div>
+            </div>
+            <div class="hydration-overlay" id="ssr-hydration">
+              <span class="hydration-text">⚡ Hydrating...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-panel">
+          <div class="sim-header">
+            <h4><span class="sim-dot csr"></span> CSR Simulation</h4>
+            <span class="sim-status" id="csr-sim-status">Waiting...</span>
+          </div>
+          <div class="sim-content">
+            <div class="sim-browser">
+              <div class="sim-browser-bar">
+                <div class="sim-browser-dot"></div>
+                <div class="sim-browser-dot"></div>
+                <div class="sim-browser-dot"></div>
+              </div>
+              <div class="sim-browser-content" id="csr-browser-content">
+                <div class="sim-skeleton title"></div>
+                <div class="sim-skeleton"></div>
+                <div class="sim-skeleton short"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Component Examples Section -->
+  <section id="components">
+    <div class="container">
+      <div class="section-header">
+        <h2>Component Examples</h2>
+        <p>See which components work best with each rendering strategy</p>
+      </div>
+
+      <div class="components-grid">
+        <!-- SSR Components -->
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Hero / Landing Section</span>
+            <span class="component-badge badge-ssr">SSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-hero" id="hero-preview">
+              <h2>Welcome to Our Platform</h2>
+              <p>Build amazing products with our tools</p>
+            </div>
+            <div class="loading-indicator" id="hero-loader" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span>Server rendering...</span>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why SSR?</h4>
+            <p>Hero sections are critical for SEO and first impressions. SSR ensures content is immediately visible and indexable by search engines. No waiting for JavaScript to load.</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Interactive Counter</span>
+            <span class="component-badge badge-csr">CSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-counter">
+              <div class="counter-display" id="counter-value">0</div>
+              <div class="counter-buttons">
+                <button class="counter-btn minus" onclick="updateCounter(-1)">−</button>
+                <button class="counter-btn plus" onclick="updateCounter(1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why CSR?</h4>
+            <p>Counters require instant feedback. Client-side rendering allows immediate state updates without server round-trips. Perfect for highly interactive elements.</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Blog Post List</span>
+            <span class="component-badge badge-ssr">SSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-blog" id="blog-preview">
+              <div class="blog-card">
+                <div class="blog-thumb"></div>
+                <div class="blog-content">
+                  <h4>Understanding Next.js</h4>
+                  <p>Learn the fundamentals of modern React</p>
+                </div>
+              </div>
+              <div class="blog-card">
+                <div class="blog-thumb"></div>
+                <div class="blog-content">
+                  <h4>Server Components Guide</h4>
+                  <p>Deep dive into React Server Components</p>
+                </div>
+              </div>
+            </div>
+            <div class="loading-indicator" id="blog-loader" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span>Fetching from server...</span>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why SSR?</h4>
+            <p>Blog content is primarily static and SEO-critical. Server rendering ensures all content is immediately available and properly indexed.</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Modal / Popup</span>
+            <span class="component-badge badge-csr">CSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-modal-trigger">
+              <p style="color: var(--text-secondary); margin-bottom: 10px;">Click to see modal behavior</p>
+              <button class="modal-btn" onclick="openModal()">Open Modal</button>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why CSR?</h4>
+            <p>Modals are triggered by user actions and don't need to be in the initial HTML. CSR allows smooth animations and immediate response to user interactions.</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Product Data Table</span>
+            <span class="component-badge badge-ssr">SSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-table" id="table-preview">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Widget Pro</td><td>$49.99</td><td>142</td></tr>
+                  <tr><td>Super Gadget</td><td>$89.99</td><td>58</td></tr>
+                  <tr><td>Mega Tool</td><td>$29.99</td><td>203</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="loading-indicator" id="table-loader" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span>Loading data...</span>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why SSR?</h4>
+            <p>Data tables with static or infrequently changing data benefit from SSR. Content is immediately visible without client-side loading states.</p>
+          </div>
+        </div>
+
+        <div class="component-card">
+          <div class="component-header">
+            <span class="component-title">Contact Form</span>
+            <span class="component-badge badge-csr">CSR Best</span>
+          </div>
+          <div class="component-preview">
+            <div class="preview-form">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="you@example.com" />
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <input type="text" placeholder="Your message..." />
+              </div>
+              <button class="submit-btn" onclick="simulateSubmit(this)">Send Message</button>
+            </div>
+          </div>
+          <div class="component-info">
+            <h4>Why CSR?</h4>
+            <p>Forms require real-time validation, instant feedback, and state management. CSR provides the interactivity needed for a smooth user experience.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo Controls -->
+      <div class="loading-demo-section">
+        <h3>See the Loading Difference</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 30px;">Watch how SSR and CSR load the same page content</p>
+        
+        <div class="demo-controls">
+          <button class="btn btn-ssr" onclick="runLoadingDemo('ssr')">Simulate SSR Load</button>
+          <button class="btn btn-csr" onclick="runLoadingDemo('csr')">Simulate CSR Load</button>
+          <button class="control-btn" onclick="resetLoadingDemo()">↺ Reset</button>
+        </div>
+
+        <div class="demo-panels">
+          <div class="demo-panel">
+            <div class="demo-panel-header">
+              <span class="sim-dot ssr"></span>
+              <span>SSR Page Load</span>
+              <span class="demo-timer" id="ssr-timer">0ms</span>
+            </div>
+            <div class="demo-browser">
+              <div class="demo-browser-bar">
+                <div class="demo-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                <div class="demo-url">mysite.com/products</div>
+              </div>
+              <div class="demo-viewport" id="ssr-viewport">
+                <div class="demo-placeholder">
+                  <span>Click "Simulate SSR Load" to start</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-status" id="ssr-demo-status">Ready</div>
+          </div>
+
+          <div class="demo-panel">
+            <div class="demo-panel-header">
+              <span class="sim-dot csr"></span>
+              <span>CSR Page Load</span>
+              <span class="demo-timer" id="csr-timer">0ms</span>
+            </div>
+            <div class="demo-browser">
+              <div class="demo-browser-bar">
+                <div class="demo-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                <div class="demo-url">mysite.com/products</div>
+              </div>
+              <div class="demo-viewport" id="csr-viewport">
+                <div class="demo-placeholder">
+                  <span>Click "Simulate CSR Load" to start</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-status" id="csr-demo-status">Ready</div>
+          </div>
+        </div>
+
+        <div class="demo-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--accent-ssr);"></div>
+            <span>SSR: Server sends complete HTML → Content visible immediately</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: var(--accent-csr);"></div>
+            <span>CSR: Browser loads JS → Fetches data → Then renders content</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hybrid Approach Section -->
+  <section id="hybrid">
+    <div class="container">
+      <div class="section-header">
+        <h2>The Best of Both Worlds</h2>
+        <p>In practice, modern Next.js apps combine SSR and CSR strategically</p>
+      </div>
+
+      <div class="hybrid-intro">
+        <div class="hybrid-badge">
+          <span class="badge-icon">⚡</span>
+          <span>Hybrid Rendering</span>
+        </div>
+        <p>Next.js allows you to choose the rendering strategy <strong>per component</strong>. Server Components handle static content and data fetching, while Client Components handle interactivity. This gives you fast initial loads AND rich interactions.</p>
+      </div>
+
+      <!-- Interactive Page Demo -->
+      <div class="page-demo-container">
+        <div class="page-demo-header">
+          <h3>Interactive Page Breakdown</h3>
+          <p>Hover over each section to see which rendering strategy it uses</p>
+          <div class="demo-toggle-container">
+            <span>Show labels:</span>
+            <button class="toggle-btn active" onclick="toggleLabels(true)">On</button>
+            <button class="toggle-btn" onclick="toggleLabels(false)">Off</button>
+          </div>
+        </div>
+
+        <div class="page-demo">
+          <div class="page-demo-browser">
+            <div class="demo-browser-bar">
+              <div class="demo-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="demo-url">mystore.com/products</div>
+            </div>
+            
+            <div class="page-demo-content">
+              <!-- Navigation - SSR -->
+              <div class="page-section ssr-section" data-type="ssr">
+                <div class="section-label ssr-label">SSR</div>
+                <div class="demo-nav">
+                  <span class="demo-logo">MyStore</span>
+                  <div class="demo-nav-links">
+                    <span>Products</span>
+                    <span>About</span>
+                    <span>Contact</span>
+                  </div>
+                  <div class="demo-nav-icons">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-icon">🛒</span>
+                  </div>
+                </div>
+                <div class="section-tooltip">
+                  <strong>Navigation Bar</strong>
+                  <p>Static links, SEO-friendly, rendered on server</p>
+                </div>
+              </div>
+
+              <!-- Hero - SSR -->
+              <div class="page-section ssr-section" data-type="ssr">
+                <div class="section-label ssr-label">SSR</div>
+                <div class="demo-hero-section">
+                  <h2>Summer Collection</h2>
+                  <p>Discover the latest trends</p>
+                  <button class="demo-cta">Shop Now</button>
+                </div>
+                <div class="section-tooltip">
+                  <strong>Hero Section</strong>
+                  <p>Marketing content, must be indexed by search engines</p>
+                </div>
+              </div>
+
+              <!-- Search & Filter - CSR -->
+              <div class="page-section csr-section" data-type="csr">
+                <div class="section-label csr-label">CSR</div>
+                <div class="demo-search-section">
+                  <input type="text" placeholder="Search products..." class="demo-search-input" />
+                  <div class="demo-filters">
+                    <span class="demo-filter active">All</span>
+                    <span class="demo-filter">Electronics</span>
+                    <span class="demo-filter">Clothing</span>
+                    <span class="demo-filter">Home</span>
+                  </div>
+                </div>
+                <div class="section-tooltip">
+                  <strong>Search & Filters</strong>
+                  <p>Real-time filtering, instant feedback needed</p>
+                </div>
+              </div>
+
+              <!-- Product Grid - SSR -->
+              <div class="page-section ssr-section" data-type="ssr">
+                <div class="section-label ssr-label">SSR</div>
+                <div class="demo-product-grid">
+                  <div class="demo-product">
+                    <div class="demo-product-img"></div>
+                    <h4>Wireless Earbuds</h4>
+                    <span class="demo-price">$79.99</span>
+                    <button class="demo-add-btn csr-highlight" data-tooltip="This button is CSR!">Add to Cart</button>
+                  </div>
+                  <div class="demo-product">
+                    <div class="demo-product-img"></div>
+                    <h4>Smart Watch</h4>
+                    <span class="demo-price">$199.99</span>
+                    <button class="demo-add-btn csr-highlight" data-tooltip="This button is CSR!">Add to Cart</button>
+                  </div>
+                  <div class="demo-product">
+                    <div class="demo-product-img"></div>
+                    <h4>Laptop Stand</h4>
+                    <span class="demo-price">$49.99</span>
+                    <button class="demo-add-btn csr-highlight" data-tooltip="This button is CSR!">Add to Cart</button>
+                  </div>
+                </div>
+                <div class="section-tooltip">
+                  <strong>Product Grid</strong>
+                  <p>Product data fetched on server, but "Add to Cart" buttons are client components</p>
+                </div>
+              </div>
+
+              <!-- Newsletter - Mixed -->
+              <div class="page-section mixed-section" data-type="mixed">
+                <div class="section-label mixed-label">MIXED</div>
+                <div class="demo-newsletter">
+                  <div class="newsletter-text">
+                    <h4>Subscribe to our newsletter</h4>
+                    <p>Get updates on new products</p>
+                  </div>
+                  <div class="newsletter-form">
+                    <input type="email" placeholder="Enter email" />
+                    <button>Subscribe</button>
+                  </div>
+                </div>
+                <div class="section-tooltip">
+                  <strong>Newsletter Section</strong>
+                  <p>Static text (SSR) + Interactive form (CSR)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="page-demo-legend">
+            <div class="legend-card ssr">
+              <div class="legend-header">
+                <span class="legend-dot ssr"></span>
+                <strong>Server Components (SSR)</strong>
+              </div>
+              <ul>
+                <li>Navigation & headers</li>
+                <li>Product listings</li>
+                <li>Blog content</li>
+                <li>SEO-critical content</li>
+                <li>Data from database</li>
+              </ul>
+            </div>
+            <div class="legend-card csr">
+              <div class="legend-header">
+                <span class="legend-dot csr"></span>
+                <strong>Client Components (CSR)</strong>
+              </div>
+              <ul>
+                <li>Search & filters</li>
+                <li>Add to cart buttons</li>
+                <li>Form submissions</li>
+                <li>Modals & dropdowns</li>
+                <li>Real-time updates</li>
+              </ul>
+            </div>
+            <div class="legend-card mixed">
+              <div class="legend-header">
+                <span class="legend-dot mixed"></span>
+                <strong>Mixed Approach</strong>
+              </div>
+              <ul>
+                <li>SSR wrapper + CSR children</li>
+                <li>Static layout, dynamic content</li>
+                <li>Progressive enhancement</li>
+                <li>Optimized bundle size</li>
+                <li>Best performance</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Example -->
+      <div class="code-example-container">
+        <h3>How It Works in Next.js</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 30px;">Use the <code>'use client'</code> directive to mark components that need interactivity</p>
+        
+        <div class="code-panels">
+          <div class="code-panel">
+            <div class="code-header">
+              <span class="code-dot ssr"></span>
+              <span>page.tsx</span>
+              <span class="code-badge ssr">Server Component</span>
+            </div>
+            <pre class="code-block"><code><span class="code-comment">// Server Component (default)</span>
+<span class="code-keyword">import</span> { ProductGrid } <span class="code-keyword">from</span> <span class="code-string">'./ProductGrid'</span>
+<span class="code-keyword">import</span> { SearchBar } <span class="code-keyword">from</span> <span class="code-string">'./SearchBar'</span>
+
+<span class="code-keyword">async function</span> <span class="code-function">ProductsPage</span>() {
+  <span class="code-comment">// Fetch data on the server</span>
+  <span class="code-keyword">const</span> products = <span class="code-keyword">await</span> <span class="code-function">getProducts</span>()
+  
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;main&gt;</span>
+      <span class="code-tag">&lt;h1&gt;</span>Our Products<span class="code-tag">&lt;/h1&gt;</span>
+      <span class="code-comment">{/* CSR component */}</span>
+      <span class="code-tag">&lt;SearchBar /&gt;</span>
+      <span class="code-comment">{/* SSR with data */}</span>
+      <span class="code-tag">&lt;ProductGrid</span> <span class="code-attr">products</span>={products} <span class="code-tag">/&gt;</span>
+    <span class="code-tag">&lt;/main&gt;</span>
+  )
+}</code></pre>
+          </div>
+
+          <div class="code-panel">
+            <div class="code-header">
+              <span class="code-dot csr"></span>
+              <span>SearchBar.tsx</span>
+              <span class="code-badge csr">Client Component</span>
+            </div>
+            <pre class="code-block"><code><span class="code-string">'use client'</span> <span class="code-comment">// ← Makes this a Client Component</span>
+
+<span class="code-keyword">import</span> { useState } <span class="code-keyword">from</span> <span class="code-string">'react'</span>
+
+<span class="code-keyword">export function</span> <span class="code-function">SearchBar</span>() {
+  <span class="code-keyword">const</span> [query, setQuery] = <span class="code-function">useState</span>(<span class="code-string">''</span>)
+  
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;input</span>
+      <span class="code-attr">value</span>={query}
+      <span class="code-attr">onChange</span>={(e) <span class="code-keyword">=&gt;</span> <span class="code-function">setQuery</span>(e.target.value)}
+      <span class="code-attr">placeholder</span>=<span class="code-string">"Search..."</span>
+    <span class="code-tag">/&gt;</span>
+  )
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="key-principles">
+          <h4>Key Principles</h4>
+          <div class="principles-grid">
+            <div class="principle-card">
+              <div class="principle-icon">🌲</div>
+              <h5>Start with Server</h5>
+              <p>All components are Server Components by default. Only add 'use client' when you need interactivity.</p>
+            </div>
+            <div class="principle-card">
+              <div class="principle-icon">🎯</div>
+              <h5>Push Client Down</h5>
+              <p>Keep client components as small as possible. Wrap only the interactive parts, not entire pages.</p>
+            </div>
+            <div class="principle-card">
+              <div class="principle-icon">📦</div>
+              <h5>Smaller Bundles</h5>
+              <p>Server Components don't add to your JavaScript bundle. Less JS = faster page loads.</p>
+            </div>
+            <div class="principle-card">
+              <div class="principle-icon">🔒</div>
+              <h5>Secure by Default</h5>
+              <p>Server Components can safely access databases and API keys without exposing them to the client.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision Flowchart -->
+      <div class="decision-flowchart">
+        <h3>Quick Decision Guide</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 40px;">Ask these questions to decide which rendering to use</p>
+        
+        <div class="flowchart">
+          <div class="flow-question">
+            <span class="flow-q-icon">❓</span>
+            <span>Does this component need user interaction?</span>
+          </div>
+          <div class="flow-branches">
+            <div class="flow-branch no">
+              <div class="flow-answer">No</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-result ssr">
+                <span class="result-icon">🖥️</span>
+                <span>Use Server Component</span>
+              </div>
+              <div class="flow-examples">
+                Headers, footers, static content, data display
+              </div>
+            </div>
+            <div class="flow-branch yes">
+              <div class="flow-answer">Yes</div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-sub-question">
+                <span>Is it just a button/link click?</span>
+              </div>
+              <div class="flow-sub-branches">
+                <div class="flow-sub-branch">
+                  <span class="sub-answer">Yes</span>
+                  <div class="flow-result ssr small">Server (use Link/form)</div>
+                </div>
+                <div class="flow-sub-branch">
+                  <span class="sub-answer">No, needs state</span>
+                  <div class="flow-result csr small">Client Component</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section id="comparison">
+    <div class="container">
+      <div class="section-header">
+        <h2>Quick Comparison</h2>
+        <p>When to use each rendering strategy</p>
+      </div>
+
+      <div class="comparison-table">
+        <div class="comparison-row comparison-header">
+          <div class="comparison-cell">Feature</div>
+          <div class="comparison-cell">SSR</div>
+          <div class="comparison-cell">CSR</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">Initial Load Speed</div>
+          <div class="comparison-cell"><span class="check-icon">✓ Faster</span></div>
+          <div class="comparison-cell"><span class="cross-icon">✗ Slower</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">SEO Optimization</div>
+          <div class="comparison-cell"><span class="check-icon">✓ Excellent</span></div>
+          <div class="comparison-cell"><span class="cross-icon">✗ Requires setup</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">Interactivity</div>
+          <div class="comparison-cell">After hydration</div>
+          <div class="comparison-cell"><span class="check-icon">✓ Immediate</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">Server Load</div>
+          <div class="comparison-cell"><span class="cross-icon">✗ Higher</span></div>
+          <div class="comparison-cell"><span class="check-icon">✓ Lower</span></div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">Best For</div>
+          <div class="comparison-cell">Content sites, landing pages</div>
+          <div class="comparison-cell">Dashboards, interactive apps</div>
+        </div>
+        <div class="comparison-row">
+          <div class="comparison-cell">Time to Interactive</div>
+          <div class="comparison-cell">Longer (needs hydration)</div>
+          <div class="comparison-cell"><span class="check-icon">✓ Faster</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Footer -->
+  <div class="nav-footer">
+    <div class="nav-footer-content">
+      <a href="how-react-works.html" class="nav-footer-link">
+        <span>←</span>
+        <div>
+          <span>Previous Module</span>
+          <strong>How React Works</strong>
+        </div>
+      </a>
+      <a href="hooks.html" class="nav-footer-link next">
+        <span>→</span>
+        <div>
+          <span>Next Module</span>
+          <strong>React Hooks</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>Built to learn Next.js rendering strategies • <a href="https://nextjs.org/docs" target="_blank">Next.js Docs</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h3>🎉 Modal Example</h3>
+      <p>This modal is rendered client-side. It doesn't exist in the initial HTML and only appears when triggered by user action.</p>
+      <button class="modal-close" onclick="closeModal()">Close Modal</button>
+    </div>
+  </div>
+
+  <script>
+    // Counter functionality
+    let counterValue = 0;
+    function updateCounter(delta) {
+      counterValue += delta;
+      document.getElementById('counter-value').textContent = counterValue;
+    }
+
+    // Modal functionality
+    function openModal() {
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal(event) {
+      if (!event || event.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.remove('active');
+      }
+    }
+
+    // Scroll to section
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Flow switching
+    let currentFlow = 'ssr';
+    function switchFlow(flow) {
+      currentFlow = flow;
+      document.getElementById('flow-ssr').style.display = flow === 'ssr' ? 'block' : 'none';
+      document.getElementById('flow-csr').style.display = flow === 'csr' ? 'block' : 'none';
+      document.getElementById('tab-ssr').className = flow === 'ssr' ? 'flow-tab active-ssr' : 'flow-tab';
+      document.getElementById('tab-csr').className = flow === 'csr' ? 'flow-tab active-csr' : 'flow-tab';
+      resetAnimation();
+    }
+
+    // Animation control
+    let animationRunning = false;
+    function playAnimation() {
+      if (animationRunning) return;
+      animationRunning = true;
+      
+      const progressBar = document.getElementById(`progress-${currentFlow}`);
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0%';
+      
+      // Force reflow
+      progressBar.offsetHeight;
+      
+      // Animate progress
+      progressBar.style.transition = 'width 4s linear';
+      progressBar.style.width = '100%';
+
+      // Animate timeline bars
+      animateTimeline();
+
+      // Animate simulation panels
+      animateSimulation();
+      
+      setTimeout(() => {
+        animationRunning = false;
+      }, 4000);
+    }
+
+    function resetAnimation() {
+      animationRunning = false;
+      document.getElementById('progress-ssr').style.width = '0%';
+      document.getElementById('progress-csr').style.width = '0%';
+      
+      // Reset timeline bars
+      const bars = document.querySelectorAll('.timeline-bar');
+      bars.forEach(bar => {
+        bar.style.opacity = '0';
+      });
+
+      // Reset simulation
+      document.getElementById('ssr-sim-status').textContent = 'Waiting...';
+      document.getElementById('csr-sim-status').textContent = 'Waiting...';
+      document.getElementById('ssr-hydration').classList.remove('active');
+      
+      const ssrContent = document.getElementById('ssr-browser-content');
+      const csrContent = document.getElementById('csr-browser-content');
+      
+      ssrContent.innerHTML = `
+        <div class="sim-skeleton title"></div>
+        <div class="sim-skeleton"></div>
+        <div class="sim-skeleton short"></div>
+      `;
+      csrContent.innerHTML = `
+        <div class="sim-skeleton title"></div>
+        <div class="sim-skeleton"></div>
+        <div class="sim-skeleton short"></div>
+      `;
+    }
+
+    function animateTimeline() {
+      const ssrBars = ['ssr-server', 'ssr-transfer', 'ssr-hydrate'];
+      const csrBars = ['csr-shell', 'csr-js', 'csr-data'];
+      
+      ssrBars.forEach((id, i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.opacity = '1';
+        }, i * 800);
+      });
+
+      csrBars.forEach((id, i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.opacity = '1';
+        }, i * 1000);
+      });
+    }
+
+    function animateSimulation() {
+      const ssrStatus = document.getElementById('ssr-sim-status');
+      const csrStatus = document.getElementById('csr-sim-status');
+      const ssrContent = document.getElementById('ssr-browser-content');
+      const csrContent = document.getElementById('csr-browser-content');
+      const ssrHydration = document.getElementById('ssr-hydration');
+
+      // SSR Timeline
+      ssrStatus.textContent = 'Server rendering...';
+      
+      setTimeout(() => {
+        ssrStatus.textContent = 'Transferring HTML...';
+      }, 1000);
+
+      setTimeout(() => {
+        ssrStatus.textContent = 'Content visible!';
+        ssrContent.innerHTML = `
+          <h4 style="margin-bottom: 8px; color: var(--accent-ssr);">Welcome to SSR</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Content rendered on server</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">SEO-friendly, fast initial load</p>
+        `;
+      }, 1600);
+
+      setTimeout(() => {
+        ssrStatus.textContent = 'Hydrating...';
+        ssrHydration.classList.add('active');
+      }, 2200);
+
+      setTimeout(() => {
+        ssrStatus.textContent = 'Interactive ✓';
+        ssrHydration.classList.remove('active');
+      }, 3200);
+
+      // CSR Timeline
+      csrStatus.textContent = 'Loading shell...';
+      
+      setTimeout(() => {
+        csrStatus.textContent = 'Parsing JavaScript...';
+        csrContent.innerHTML = `
+          <div style="text-align: center; padding: 20px;">
+            <div class="loading-spinner" style="margin: 0 auto 12px;"></div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Loading...</p>
+          </div>
+        `;
+      }, 800);
+
+      setTimeout(() => {
+        csrStatus.textContent = 'Fetching data...';
+      }, 2000);
+
+      setTimeout(() => {
+        csrStatus.textContent = 'Rendering...';
+      }, 3000);
+
+      setTimeout(() => {
+        csrStatus.textContent = 'Interactive ✓';
+        csrContent.innerHTML = `
+          <h4 style="margin-bottom: 8px; color: var(--accent-csr);">Welcome to CSR</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Content rendered in browser</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Great for dynamic apps</p>
+        `;
+      }, 3800);
+    }
+
+    // Simulate loading for components
+    function simulateLoading(type) {
+      const ssrComponents = ['hero-preview', 'blog-preview', 'table-preview'];
+      const ssrLoaders = ['hero-loader', 'blog-loader', 'table-loader'];
+      
+      if (type === 'ssr') {
+        // SSR: Show loader briefly, then content appears
+        ssrComponents.forEach((id, i) => {
+          const el = document.getElementById(id);
+          const loader = document.getElementById(ssrLoaders[i]);
+          
+          el.style.opacity = '0';
+          loader.style.display = 'flex';
+          
+          setTimeout(() => {
+            loader.style.display = 'none';
+            el.style.opacity = '1';
+            el.style.transition = 'opacity 0.3s';
+          }, 800 + (i * 200));
+        });
+      } else {
+        // CSR: Longer loading, content appears gradually
+        ssrComponents.forEach((id, i) => {
+          const el = document.getElementById(id);
+          const loader = document.getElementById(ssrLoaders[i]);
+          
+          el.style.opacity = '0';
+          loader.style.display = 'flex';
+          loader.querySelector('span').textContent = 'Fetching client-side...';
+          
+          setTimeout(() => {
+            loader.style.display = 'none';
+            el.style.opacity = '1';
+            el.style.transition = 'opacity 0.5s';
+          }, 1500 + (i * 400));
+        });
+      }
+    }
+
+    // Loading Demo Functions
+    let ssrTimerInterval, csrTimerInterval;
+    let ssrTime = 0, csrTime = 0;
+
+    function resetLoadingDemo() {
+      // Clear timers
+      clearInterval(ssrTimerInterval);
+      clearInterval(csrTimerInterval);
+      ssrTime = 0;
+      csrTime = 0;
+
+      // Reset SSR panel
+      document.getElementById('ssr-timer').textContent = '0ms';
+      document.getElementById('ssr-demo-status').textContent = 'Ready';
+      document.getElementById('ssr-viewport').innerHTML = `
+        <div class="demo-placeholder">
+          <span>Click "Simulate SSR Load" to start</span>
+        </div>
+      `;
+
+      // Reset CSR panel
+      document.getElementById('csr-timer').textContent = '0ms';
+      document.getElementById('csr-demo-status').textContent = 'Ready';
+      document.getElementById('csr-viewport').innerHTML = `
+        <div class="demo-placeholder">
+          <span>Click "Simulate CSR Load" to start</span>
+        </div>
+      `;
+    }
+
+    function runLoadingDemo(type) {
+      if (type === 'ssr') {
+        runSSRDemo();
+      } else {
+        runCSRDemo();
+      }
+    }
+
+    function runSSRDemo() {
+      const viewport = document.getElementById('ssr-viewport');
+      const status = document.getElementById('ssr-demo-status');
+      const timer = document.getElementById('ssr-timer');
+      
+      // Reset
+      clearInterval(ssrTimerInterval);
+      ssrTime = 0;
+      timer.style.color = 'var(--text-muted)';
+      
+      // Start timer
+      ssrTimerInterval = setInterval(() => {
+        ssrTime += 50;
+        timer.textContent = ssrTime + 'ms';
+      }, 50);
+
+      // Phase 1: Request sent
+      status.textContent = '📤 Request sent to server...';
+      viewport.innerHTML = `
+        <div class="demo-placeholder">
+          <span style="color: var(--accent-ssr);">⏳ Waiting for server...</span>
+        </div>
+      `;
+
+      // Phase 2: Server processing (600ms)
+      setTimeout(() => {
+        status.textContent = '⚙️ Server fetching data & rendering HTML...';
+      }, 300);
+
+      // Phase 3: HTML received - CONTENT VISIBLE! (800ms)
+      setTimeout(() => {
+        status.textContent = '📥 Full HTML received - Content visible!';
+        viewport.innerHTML = `
+          <div class="demo-content">
+            <h4>🛍️ Featured Products</h4>
+            <p>Discover our best-selling items this season</p>
+            <div class="demo-card">
+              <div class="demo-card-img"></div>
+              <div class="demo-card-text">
+                <h5>Premium Headphones</h5>
+                <span>$299.99</span>
+              </div>
+            </div>
+            <div class="demo-card">
+              <div class="demo-card-img"></div>
+              <div class="demo-card-text">
+                <h5>Wireless Keyboard</h5>
+                <span>$149.99</span>
+              </div>
+            </div>
+          </div>
+          <div class="demo-hydrating" id="ssr-hydrating">
+            <span>⚡ Hydrating...</span>
+          </div>
+        `;
+      }, 800);
+
+      // Phase 4: Hydration starts (1200ms)
+      setTimeout(() => {
+        status.textContent = '⚡ Hydrating (attaching JavaScript)...';
+        const hydrating = document.getElementById('ssr-hydrating');
+        if (hydrating) hydrating.classList.add('active');
+      }, 1200);
+
+      // Phase 5: Fully interactive (1800ms)
+      setTimeout(() => {
+        clearInterval(ssrTimerInterval);
+        status.textContent = '✅ Fully interactive! (Total: ' + ssrTime + 'ms)';
+        const hydrating = document.getElementById('ssr-hydrating');
+        if (hydrating) hydrating.classList.remove('active');
+        timer.style.color = 'var(--accent-ssr)';
+      }, 1800);
+    }
+
+    function runCSRDemo() {
+      const viewport = document.getElementById('csr-viewport');
+      const status = document.getElementById('csr-demo-status');
+      const timer = document.getElementById('csr-timer');
+      
+      // Reset
+      clearInterval(csrTimerInterval);
+      csrTime = 0;
+      timer.style.color = 'var(--text-muted)';
+      
+      // Start timer
+      csrTimerInterval = setInterval(() => {
+        csrTime += 50;
+        timer.textContent = csrTime + 'ms';
+      }, 50);
+
+      // Phase 1: Empty shell received (200ms)
+      status.textContent = '📤 Request sent...';
+      viewport.innerHTML = `
+        <div class="demo-placeholder">
+          <span style="color: var(--accent-csr);">⏳ Loading...</span>
+        </div>
+      `;
+
+      setTimeout(() => {
+        status.textContent = '📥 Empty HTML shell received';
+        viewport.innerHTML = `
+          <div class="demo-spinner-container">
+            <div class="demo-spinner"></div>
+            <span class="demo-spinner-text">Loading application...</span>
+          </div>
+        `;
+      }, 200);
+
+      // Phase 2: JS parsing (800ms)
+      setTimeout(() => {
+        status.textContent = '⚙️ Parsing & executing JavaScript...';
+        viewport.innerHTML = `
+          <div class="demo-spinner-container">
+            <div class="demo-spinner"></div>
+            <span class="demo-spinner-text">Initializing React...</span>
+          </div>
+        `;
+      }, 800);
+
+      // Phase 3: Data fetching starts (1400ms)
+      setTimeout(() => {
+        status.textContent = '🔄 Fetching data from API...';
+        viewport.innerHTML = `
+          <div class="demo-content">
+            <div class="demo-skeleton-block title"></div>
+            <div class="demo-skeleton-block text"></div>
+            <div class="demo-skeleton-block card"></div>
+            <div class="demo-skeleton-block card"></div>
+          </div>
+        `;
+      }, 1400);
+
+      // Phase 4: Data received, rendering (2400ms)
+      setTimeout(() => {
+        status.textContent = '🎨 Data received, rendering components...';
+      }, 2400);
+
+      // Phase 5: Fully loaded (2800ms)
+      setTimeout(() => {
+        clearInterval(csrTimerInterval);
+        status.textContent = '✅ Fully interactive! (Total: ' + csrTime + 'ms)';
+        timer.style.color = 'var(--accent-csr)';
+        viewport.innerHTML = `
+          <div class="demo-content">
+            <h4>🛍️ Featured Products</h4>
+            <p>Discover our best-selling items this season</p>
+            <div class="demo-card">
+              <div class="demo-card-img"></div>
+              <div class="demo-card-text">
+                <h5>Premium Headphones</h5>
+                <span>$299.99</span>
+              </div>
+            </div>
+            <div class="demo-card">
+              <div class="demo-card-img"></div>
+              <div class="demo-card-text">
+                <h5>Wireless Keyboard</h5>
+                <span>$149.99</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }, 2800);
+    }
+
+    // Toggle labels for hybrid page demo
+    function toggleLabels(show) {
+      const labels = document.querySelectorAll('.section-label');
+      const buttons = document.querySelectorAll('.toggle-btn');
+      
+      labels.forEach(label => {
+        if (show) {
+          label.classList.remove('hidden');
+        } else {
+          label.classList.add('hidden');
+        }
+      });
+      
+      buttons.forEach(btn => btn.classList.remove('active'));
+      if (show) {
+        buttons[0].classList.add('active');
+      } else {
+        buttons[1].classList.add('active');
+      }
+    }
+
+    // Form submit simulation
+    function simulateSubmit(btn) {
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        btn.textContent = 'Sent! ✓';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }, 1500);
+      }, 1000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      resetAnimation();
+    });
+  </script>
+</body>
+</html>
